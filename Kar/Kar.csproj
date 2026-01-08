@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Arrow 2.png" />
+    <None Remove="Assets\Icons\ArrowB.png" />
+    <None Remove="Assets\Icons\ArrowF.png" />
+    <None Remove="Assets\Icons\CloseButton.png" />
+    <None Remove="Assets\Icons\CollapseButton.png" />
+    <None Remove="Assets\Icons\Home.png" />
+    <None Remove="Assets\Icons\update.png" />
+    <None Remove="Assets\Icons\windowedButton.png" />
+    <None Remove="CollapseButton.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CefSharp.Wpf.NETCore" Version="143.0.90" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\Icons\ArrowB.png" />
+    <Resource Include="Assets\Icons\ArrowF.png" />
+    <Resource Include="Assets\Icons\CloseButton.png" />
+    <Resource Include="Assets\Icons\CollapseButton.png" />
+    <Resource Include="Assets\Icons\Home.png" />
+    <Resource Include="Assets\Icons\update.png" />
+    <Resource Include="Assets\Icons\windowedButton.png" />
+  </ItemGroup>
+
+</Project>
