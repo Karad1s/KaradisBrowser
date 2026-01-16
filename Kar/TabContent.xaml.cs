@@ -1,7 +1,9 @@
 ﻿using CefSharp;
+using CefSharp.Handler;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+
 
 
 namespace Kar
@@ -14,6 +16,16 @@ namespace Kar
         public TabContent()
         {
             InitializeComponent();
+            this.DataContextChanged += (s, e) =>
+            {
+                if (DataContext is TabViewModel viewModel)
+                {
+                    viewModel.Browser = this.Browser;
+                }
+            };
+
+            Browser.LifeSpanHandler = new LifeSpanHandler();
+            Browser.DisplayHandler = new CustomDisplayHandler();
         }
 
         public string Url
@@ -53,76 +65,6 @@ namespace Kar
                     Title = args.NewValue.ToString();
                 });
             };
-        }
-
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (Browser.CanGoBack)
-            {
-                Browser.Back();
-            }
-        }
-        private void ForwardButton_Click(object sender, RoutedEventArgs e)
-        {
-            Browser.Forward();
-        }
-        private void ReloadButton_Click(object sender, RoutedEventArgs e)
-        {
-            Browser.Reload();
-        }
-        private void HomeButton_Click(object sender, RoutedEventArgs e)
-        {
-            Browser.Load("https://www.google.com");
-        }
-
-        private void SearchButton_Click(object sender, RoutedEventArgs e)
-        {
-            
-        }
-
-        private void SearchBox_KeyDown(object sender, KeyEventArgs e)
-        {
-
-                Search(e);
-
-        }
-
-        private void ExntensionButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-        private void FavoriteButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-        private void DownloadButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void SettingsButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void MoreButton_Click(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
-        }
-
-        private void Search(KeyEventArgs e)
-        {
-            if(e.Key == Key.Enter)
-            {
-                string query = SearchBox.Text;
-                if (query.StartsWith("http")) Browser.Load(query);
-                else Browser.Load("https://www.google.com/search?q=" + Uri.EscapeDataString(query));
-            }
-            
         }
 
     }

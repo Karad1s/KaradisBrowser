@@ -10,60 +10,6 @@
 
     <Grid>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Кнопки управления -->
-        <Grid Grid.Row="0" >
-            <StackPanel Orientation="Horizontal" Margin="0" Width="150 " HorizontalAlignment="Left" VerticalAlignment="Center" Cursor="Arrow">
-            <!-- Кнопка назад -->
-            <Button x:Name="BackButton" Margin="5" Width="25" Height="25" Click="BackButton_Click" BorderBrush="Transparent" BorderThickness="2" Background="Transparent">
-                <Image Source="/Assets/Icons/ArrowB.png" Height="20" Width="20"/>
-            </Button>
-            <!-- Кнопка вперед -->
-            <Button x:Name="ForwardButton" Margin="5" Width="25" Height="25" Click="ForwardButton_Click" BorderBrush="Transparent" Background="Transparent" BorderThickness="2">
-                <Image Source="/Assets/Icons/ArrowF.png" Width="20" Height="20"/>
-            </Button>
-            <!-- Кнопка обновить -->
-                <Button x:Name="ReloadButton" Margin="5" Width="25" Height="25" Click="ReloadButton_Click" BorderBrush="Transparent" Background="Transparent" BorderThickness="2">
-                <Image Source="/Assets/Icons/update.png" Width="20" Height="20"/>
-            </Button>
-            <!-- Кнопка домой-->
-                <Button x:Name="HomeButton" Margin="5" Width="25" Height="25" Click="HomeButton_Click" BorderBrush="Transparent" Background="Transparent" BorderThickness="2">
-                    <Image Source="/Assets/Icons/Home.png"/>
-                </Button>
-            </StackPanel>
-        
-        <!-- Строка поиска -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Width=" 600" Height="25" Margin="10" >
-            <TextBox  x:Name="SearchBox" Text="{Binding Url, RelativeSource={RelativeSource AncestorType=UserControl},Mode=TwoWay,UpdateSourceTrigger=LostFocus}" Width="500" Height="25" TextChanged="SearchBox_TextChanged" Padding="5" Background="#FF4E4D4D" BorderBrush="#FF7E7E7F">
-                 
-            </TextBox>
-            <!-- Кнопка поиска -->
-                <Button x:Name="SearchButton" Width ="25" Height="25" Margin="0,0" Click="SearchButton_Click" BorderBrush="Transparent" Background="Transparent" BorderThickness="2">
-                <Image/>
-            </Button>
-        </StackPanel>
-        <!-- Дополнительные кнопки -->
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-
-                <Button x:Name="ExntensionButton" Width="25" Height="25" Margin="5,0" Click="ExntensionButton_Click" BorderBrush="Transparent" Background="Transparent" BorderThickness="2">
-                <Image/>
-            </Button>
-                <Button x:Name="FavoriteButton" Width="25" Height="25" Margin="5,0" Click="FavoriteButton_Click" BorderBrush="Transparent" Background="Transparent" BorderThickness="2">
-                <Image/>
-            </Button>
-                <Button x:Name="DownloadButton" Width="25" Height="25" Margin="5,0" Click="DownloadButton_Click" BorderBrush="Transparent" Background="Transparent" BorderThickness="2">
-                <Image/>
-            </Button>
-                <Button x:Name="MoreButton" Width="25" Height="25" Margin="5,0" Click="MoreButton_Click" BorderBrush="Transparent" Background="Transparent" BorderThickness="2">
-                <Image/>
-            </Button>
-        </StackPanel>
-        </Grid>
-
         <cef:ChromiumWebBrowser x:Name="Browser" 
                         Grid.Row="1" 
                         Address="{Binding Url, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />

@@ -8,6 +8,7 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Background="#171717"
         ResizeMode="CanResize"
+        StateChanged="MainWindow_StateChanged"
         WindowStyle="None"
         Title="Main" Height="720" Width="1024">
 
@@ -33,6 +34,29 @@
                     <Setter Property="Background" Value="#333333"/>
                 </Trigger>
             </Style.Triggers>
+        </Style>
+
+        <Style x:Key="CleanNavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter x:Name="content" Opacity="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="content" Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#33FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="{x:Type TabControl}">
@@ -67,13 +91,14 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
+    <Grid x:Name = "RootGrid">
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
+            <RowDefinition x:Name="TopRow" Height="36"/>
+            <RowDefinition x:Name="PanelControl" Height="36"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" >
+        <Grid Grid.Row="0" x:Name="TopBar" >
             <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -87,58 +112,87 @@
                     BorderThickness="0"
                     Grid.Row="1"
                     Grid.Column="0">
-            
 
-                    <TabControl.ItemTemplate>
-                        <DataTemplate >
-                            <StackPanel Orientation="Horizontal"
-                                        VerticalAlignment="Center"
+
+                <TabControl.ItemTemplate>
+                    <DataTemplate >
+                        <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Bottom"
                                         shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                                <TextBlock Text="{Binding Title}" MaxWidth="100" TextTrimming="CharacterEllipsis"/>
-                                <Button Content="X"
+                            <TextBlock Text="{Binding Title}" MaxWidth="100" TextTrimming="CharacterEllipsis"/>
+                            <Button Content="X"
                                 Margin="5,0,0,0"
                                 Background="Transparent" 
                                 BorderThickness="0" 
-                                Click="CloseTabButton_Click"
                                 Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                CommandParameter="{Binding}"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </TabControl.ItemTemplate>
-                    <TabControl.ContentTemplate>
-                        <DataTemplate>
-                            <local:TabContent Url="{Binding Url, Mode=TwoWay}"/>
-                        </DataTemplate>
-                    </TabControl.ContentTemplate>
-                </TabControl>
+                                CommandParameter="{Binding}"
+                                />
+                        </StackPanel>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+            </TabControl>
             
             <Button Grid.Column="1" 
                     Content="+" 
                     VerticalAlignment="Center"
-                    Click="AddTabButton_Click" 
+                    Command="{Binding AddTabCommand}"
                     Width="30" Height="30" 
                     Margin="5,0"
                     BorderThickness="0"
-                    shell:WindowChrome.IsHitTestVisibleInChrome="True"/>
+                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
 
             <StackPanel Orientation="Horizontal" 
                         HorizontalAlignment="Right"
                         VerticalAlignment="Stretch"
                         Panel.ZIndex="10" 
                         Grid.Column="2">
-                <Button Style="{StaticResource ChromeButtonStyle}" Width="30" Height="30" Click="MinimizeButton_Click">
+                <Button Style="{StaticResource ChromeButtonStyle}" Width="30" Height="30" Click="MinimizeButton_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Image Source="/Assets/Icons/CollapseButton.png" Width="10" Height="10"/>
                 </Button>
-                <Button Style="{StaticResource ChromeButtonStyle}" Width="30" Height="30"  Click="MaximizeButton_Click">
+                <Button Style="{StaticResource ChromeButtonStyle}" Width="30" Height="30"  Click="MaximizeButton_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Image Source="/Assets/Icons/windowedButton.png" Width="10" Height="10"/>
                 </Button>
-                <Button Style="{StaticResource ChromeButtonStyle}" Width="30" Height="30"  Click="CloseButton_Click">
+                <Button Style="{StaticResource ChromeButtonStyle}" Width="30" Height="30"  Click="CloseButton_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Image Source="/Assets/Icons/CloseButton.png" Width="10" Height="10"/>
                 </Button>
             </StackPanel>
         </Grid>
 
-        <ContentControl Grid.Row="1" Content="{Binding SelectedTab}">
+        <Grid Grid.Row="1" >
+            <!-- Строка управления -->
+            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" VerticalAlignment="Center" Width="140" Margin="0">
+                <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.BackCommand}">
+                    <Image Source="/Assets/Icons/ArrowB.png"/>
+                </Button>
+                <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.ForwardCommand}">
+                    <Image Source="/Assets/Icons/ArrowF.png"/>
+                </Button>
+                <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.ReloadCommand}">
+                    <Image Source="/Assets/Icons/update.png"/>
+                </Button>
+                <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.HomeCommand}">
+                    <Image Source="/Assets/Icons/Home.png"/>
+                </Button>
+            </StackPanel>
+            <!-- Строка Поиска -->
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <TextBox Width="600"/>
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center" Width="140" Margin="5,0">
+                <Button Width="30" Height="30" BorderThickness="0">
+                    <Image/>
+                </Button>
+                <Button Width="30" Height="30" BorderThickness="0">
+                    <Image/>
+                </Button>
+                <Button Width="30" Height="30"  BorderThickness="0">
+                    <Image/>
+                </Button>
+            </StackPanel>
+
+        </Grid>
+        
+        <ContentControl Grid.Row="2" Content="{Binding SelectedTab}">
             <ContentControl.ContentTemplate>
                 <DataTemplate>
                     <local:TabContent Url="{Binding Url,Mode=TwoWay}"/>
