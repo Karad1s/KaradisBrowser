@@ -1,97 +1,111 @@
-﻿using System.Text;
-using System.Windows;
+﻿using CefSharp;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Windows;
 
 namespace Kar
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
-        private TabViewModel _selectedTab;
-        public TabViewModel SelectedTab
-        {
-            get => _selectedTab;
-            set
-            {
-                _selectedTab = value;
-                OnPropertyChanged(nameof(SelectedTab));
-            }
-        }
+        private WindowState _prevWindowState;
+        private WindowStyle _prevWindowStyle;
+        private ResizeMode _prevResizeMode;
 
-        public MainWindow() 
-        {
+        public MainViewModel ViewModel { get; set; }
 
+        public MainWindow()
+        {
+            ViewModel = new MainViewModel(this);
             InitializeComponent();
-
-            Tabs = new ObservableCollection<TabViewModel>();
-
-            this.DataContext = this;
-            AddNewTab("https://www.google.com");
-        }
-        public ObservableCollection<TabViewModel> Tabs { get; set; }
-        public void AddNewTab(string url)
-        {
-            var newTab = new TabViewModel { Title = "Новая вкладка", Url = url };
-            Tabs.Add(newTab);
-            SelectedTab = newTab;
-        }
-
-        private void AddTabButton_Click(object sender, RoutedEventArgs e)
-        {
-            AddNewTab("https://www.google.com");
-        }
-
-        private void CloseTabButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (Tabs.Count > 1)
-            {
-                var tabViewModel = (sender as FrameworkElement).DataContext as TabViewModel;
-                Tabs.Remove(tabViewModel);
-            }
-            else
-            {
-                this.Close();
-            }
-
+            this.DataContext = ViewModel;
 
         }
+
 
         private void MainWindow_StateChanged(object sender, EventArgs e)
         {
-            if (this.WindowState == WindowState.Maximized)
+            if (this.WindowState == WindowState.Maximized && !_isManualFullscreen)
             {
-                var thickness = SystemParameters.WindowResizeBorderThickness;
-                this.BorderThickness = new Thickness(thickness.Left, thickness.Top, thickness.Right, thickness.Bottom);
+                this.MaxHeight = SystemParameters.WorkArea.Height;
+                this.MaxWidth = SystemParameters.WorkArea.Width;
+
+                if (RootGrid !=null) RootGrid.Margin = new Thickness(8);
             }
+
+            else if (this.WindowState == WindowState.Maximized && _isManualFullscreen)
+            {
+                this.MaxHeight = double.PositiveInfinity;
+                this.MaxWidth = double.PositiveInfinity;
+                if (RootGrid != null) RootGrid.Margin = new Thickness(0);
+            }   
+
             else
             {
-                this.BorderThickness = new Thickness(0);
+                this.MaxHeight = double.PositiveInfinity;
+                this.MaxWidth = double.PositiveInfinity;
+                if (RootGrid != null) RootGrid.Margin = new Thickness(0);
             }
         }
-
-        private void Browser_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void MinimizeButton_Click(object sender, RoutedEventArgs e) => this.WindowState = WindowState.Minimized;
-
-        private void MaximizeButton_Click(object sender, RoutedEventArgs e) =>
-            this.WindowState = (this.WindowState == WindowState.Maximized) ? WindowState.Normal : WindowState.Maximized;
-
 
         private void CloseButton_Click(object sender, RoutedEventArgs e) => this.Close();
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e) => this.WindowState = WindowState.Minimized;
+
+        private void MaximizeButton_Click(object sender, RoutedEventArgs e)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+            if (this.WindowState == WindowState.Maximized)
+            {
+                this.WindowState = WindowState.Normal;
+            }
+            else
+            {
+                this.WindowState = WindowState.Maximized;
+            }
         }
 
-        
+        private bool _isManualFullscreen = false;
+
+        public void SetFullScreen(bool fullscreen)
+        {   
+            _isManualFullscreen = fullscreen;
+            
+            if (fullscreen)
+            {
+                _prevWindowState = WindowState;
+                _prevWindowStyle = WindowStyle;
+                _prevResizeMode = ResizeMode;
+
+                WindowStyle = WindowStyle.None;
+                ResizeMode = ResizeMode.NoResize;
+
+                if (TopRow != null) TopRow.Height = new GridLength(0);
+                if (PanelControl != null) PanelControl.Height = new GridLength(0);
+                if (TopBar != null) TopBar.Visibility = Visibility.Collapsed;
+
+                if (WindowState == WindowState.Maximized) MainWindow_StateChanged(this, EventArgs.Empty);
+                else 
+                    WindowState = WindowState.Minimized;
+
+            }
+            else
+            {
+                WindowStyle = _prevWindowStyle;
+                ResizeMode = _prevResizeMode;
+
+                if (TopRow != null) TopRow.Height = new GridLength(36);
+                if (PanelControl != null) PanelControl.Height = new GridLength(35);
+                if (TopBar != null) TopBar.Visibility = Visibility.Visible;
+
+                this.WindowState = _prevWindowState;
+
+                MainWindow_StateChanged(this, EventArgs.Empty);
+            }
+        }
     }
 }
+       
