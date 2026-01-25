@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Kar"
+        xmlns:local="clr-namespace:Kar" 
         xmlns:cef="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Background="#171717"
@@ -11,6 +11,7 @@
         StateChanged="MainWindow_StateChanged"
         WindowStyle="None"
         Title="Main" Height="720" Width="1024">
+
 
     <WindowChrome.WindowChrome>
         <shell:WindowChrome
@@ -22,6 +23,7 @@
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
+        <local:TabSelectionConverter x:Key="TabSelectionConverter"/>
         <Style x:Key="ChromeButtonStyle" TargetType="Button">
             <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -34,29 +36,6 @@
                     <Setter Property="Background" Value="#333333"/>
                 </Trigger>
             </Style.Triggers>
-        </Style>
-
-        <Style x:Key="CleanNavButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Setter Property="Template">
-
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <ContentPresenter x:Name="content" Opacity="1" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="content" Property="Opacity" Value="1"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#33FFFFFF"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
 
         <Style TargetType="{x:Type TabControl}">
@@ -89,6 +68,30 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+
+        <Style x:Key="TabBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="#2D2D2D"/>
+            <Setter Property="CornerRadius" Value="9,9,0,0"/>
+            <Setter Property="Margin" Value="2,0,2,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Style.Triggers>
+                <DataTrigger Value="True">
+                    <DataTrigger.Binding>
+                        <MultiBinding Converter="{StaticResource TabSelectionConverter}">
+                            <Binding/>
+                            <Binding Path="DataContext.SelectedTab" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                        </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="Background" Value="#616161"/>
+                </DataTrigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#404040"/>
+                </Trigger>
+            </Style.Triggers>
+
+        </Style>
     </Window.Resources>
 
     <Grid x:Name = "RootGrid">
@@ -100,41 +103,55 @@
 
         <Grid Grid.Row="0" x:Name="TopBar" >
             <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-            
-            <TabControl x:Name="MainTabs"
-                    ItemsSource="{Binding Tabs}"
-                    SelectedItem="{Binding SelectedTab}"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Grid.Row="1"
-                    Grid.Column="0">
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
+            <ItemsControl x:Name="MainTab" ItemsSource="{Binding Tabs}" Grid.Column="0" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource TabBorderStyle}" Width="150" Height="30">
+                            <Border.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" 
+                                                        Command="{Binding DataContext.SelectedTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                        CommandParameter="{Binding}"/>
+                            </Border.InputBindings>
 
-                <TabControl.ItemTemplate>
-                    <DataTemplate >
-                        <StackPanel Orientation="Horizontal"
-                                        VerticalAlignment="Bottom"
-                                        shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                            <TextBlock Text="{Binding Title}" MaxWidth="100" TextTrimming="CharacterEllipsis"/>
-                            <Button Content="X"
-                                Margin="5,0,0,0"
-                                Background="Transparent" 
-                                BorderThickness="0" 
-                                Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=TabControl}}"
-                                CommandParameter="{Binding}"
-                                />
-                        </StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="{Binding Title}" 
+                               Foreground="White" 
+                               VerticalAlignment="Center" 
+                               Margin="10,0" 
+                               FontSize="12"
+                               TextTrimming="CharacterEllipsis"/>
+
+                                <Button Grid.Column="1" Margin="0,0,5,0" 
+                                Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding}" BorderThickness="0" Width="15" Height="15" Background="Transparent">
+                                    <Image Source="/CloseTabBtn.png" Width="12" Height="12"/>
+                                </Button>
+                            
+                            </Grid>
+                        </Border>
                     </DataTemplate>
-                </TabControl.ItemTemplate>
-            </TabControl>
-            
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
             <Button Grid.Column="1" 
-                    Content="+" 
+                    Content="+"
                     VerticalAlignment="Center"
+                    HorizontalAlignment="Left"
                     Command="{Binding AddTabCommand}"
                     Width="30" Height="30" 
                     Margin="5,0"
@@ -176,6 +193,7 @@
             </StackPanel>
             <!-- Строка Поиска -->
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <ComboBox x:Name="ChangedSearchSystem" DisplayMemberPath="Name" SelectedValuePath="Name"  SelectionChanged="ChangedSearchSystem_SelectionChanged" Width="70"/>
                 <TextBox Width="600"/>
             </StackPanel>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center" Width="140" Margin="5,0">
@@ -191,7 +209,7 @@
             </StackPanel>
 
         </Grid>
-        
+
         <ContentControl Grid.Row="2" Content="{Binding SelectedTab}">
             <ContentControl.ContentTemplate>
                 <DataTemplate>

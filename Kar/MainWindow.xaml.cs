@@ -1,9 +1,13 @@
 ﻿using CefSharp;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
+using System.Windows.Automation.Provider;
+using System.Windows.Data;
 
 namespace Kar
 {
@@ -23,6 +27,14 @@ namespace Kar
             ViewModel = new MainViewModel(this);
             InitializeComponent();
             this.DataContext = ViewModel;
+            ChangedSearchSystem.ItemsSource = new SearchSystem[]
+            {
+                new SearchSystem(   "Google","https://www.google.com/search?q="),
+                new SearchSystem("Bing","https://www.bing.com/search?q="),
+                new SearchSystem("DuckDuckGo","https://duckduckgo.com/?q="),
+                new SearchSystem("Yandex","https://www.yandex.com/search?q="),
+            };
+            ChangedSearchSystem.SelectedIndex = 0;
 
         }
 
@@ -105,6 +117,35 @@ namespace Kar
 
                 MainWindow_StateChanged(this, EventArgs.Empty);
             }
+        }
+
+        private void ChangedSearchSystem_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if(ChangedSearchSystem.SelectedItem is "Google") {}
+        }
+    }
+
+    public class TabSelectionConverter : IMultiValueConverter
+    {
+       public object Convert(object[] values, Type targetType,object parameter, CultureInfo culture)
+        {
+            if(values.Length <2) return false;
+            return values[0] == values[1];
+        }
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class SearchSystem
+    {
+        public string Name { get; set; } = "";
+        public string Url { get; set; } = "";
+        public SearchSystem(string name, string url)
+        {
+            Name = name;
+            Url = url;
         }
     }
 }

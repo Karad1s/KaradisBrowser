@@ -23,6 +23,7 @@ namespace Kar
 
         public ICommand AddTabCommand { get; }
         public ICommand CloseTabCommand { get; }
+        public ICommand SelectedTabCommand { get; }
 
         public MainViewModel(MainWindow window)
         {
@@ -38,6 +39,14 @@ namespace Kar
                 }
                 ;
             });
+            SelectedTabCommand = new RelayCommand(obj =>
+            {
+                if (obj is TabViewModel tab)
+                {
+                    SelectedTab = tab;
+                }
+            });
+
             AddNewTab("https://www.google.com");
         }
 
