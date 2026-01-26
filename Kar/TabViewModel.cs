@@ -13,7 +13,7 @@ namespace Kar
         private IWebBrowser? _browser;
 
         public string? Title
-        {
+        { 
             get => _title;
             set { _title = value; OnPropertyChanged(); }
         }
@@ -40,13 +40,7 @@ namespace Kar
             BackCommand = new RelayCommand(obj => Browser?.Back());
             ForwardCommand = new RelayCommand(obj => Browser?.Forward());
             ReloadCommand = new RelayCommand(obj => Browser?.Reload());
-            HomeCommand = new RelayCommand(obj => 
-            {
-                if (Browser != null)
-                {
-                    Browser.Load("https://www.google.com");
-                }
-            });
+            HomeCommand = new RelayCommand(obj => Browser?.Load(this.Url));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -63,6 +57,17 @@ namespace Kar
                 {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
                 });
+            }
+        }
+
+        public void LoadHomePage()
+        {
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string filePath = System.IO.Path.Combine(baseDirectory, "home.html");
+
+            if (System.IO.File.Exists(filePath))
+            {
+                this.Url = $"file:///{filePath.Replace('\\', '/')}";
             }
         }
     }

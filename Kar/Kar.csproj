@@ -2,22 +2,17 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <Platforms>AnyCPU;x64</Platforms>
+    <OutputType>Exe</OutputType>
+    <PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Arrow 2.png" />
-    <None Remove="Assets\Icons\ArrowB.png" />
-    <None Remove="Assets\Icons\ArrowF.png" />
-    <None Remove="Assets\Icons\CloseButton.png" />
-    <None Remove="Assets\Icons\CollapseButton.png" />
-    <None Remove="Assets\Icons\Home.png" />
-    <None Remove="Assets\Icons\update.png" />
-    <None Remove="Assets\Icons\windowedButton.png" />
-    <None Remove="CollapseButton.png" />
+    <None Remove="Assets\Icons\AddNewTab.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,13 +20,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\Icons\AddNewTab.png" />
     <Resource Include="Assets\Icons\ArrowB.png" />
     <Resource Include="Assets\Icons\ArrowF.png" />
     <Resource Include="Assets\Icons\CloseButton.png" />
+    <Resource Include="Assets\Icons\CloseTabBtn.png" />
+    <Resource Include="Assets\Icons\CloseTabBtn.svg" />
     <Resource Include="Assets\Icons\CollapseButton.png" />
     <Resource Include="Assets\Icons\Home.png" />
     <Resource Include="Assets\Icons\update.png" />
     <Resource Include="Assets\Icons\windowedButton.png" />
+    <Content Include="Homepage\home.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Homepage\style.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

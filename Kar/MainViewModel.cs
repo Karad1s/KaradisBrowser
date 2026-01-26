@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
@@ -23,11 +24,12 @@ namespace Kar
 
         public ICommand AddTabCommand { get; }
         public ICommand CloseTabCommand { get; }
+        public ICommand SelectedTabCommand { get; }
 
         public MainViewModel(MainWindow window)
         {
             this.mainWindow = window;
-            AddTabCommand = new RelayCommand(obj => AddNewTab("https://www.google.com"));
+            AddTabCommand = new RelayCommand(obj => AddNewTab(string.Empty));
             CloseTabCommand = new RelayCommand(obj =>
             {
                 if (obj is TabViewModel tab) 
@@ -38,12 +40,27 @@ namespace Kar
                 }
                 ;
             });
-            AddNewTab("https://www.google.com");
+            SelectedTabCommand = new RelayCommand(obj =>
+            {
+                if (obj is TabViewModel tab)
+                {
+                    SelectedTab = tab;
+                }
+            });
+
+            AddNewTab(string.Empty);
         }
 
         public void AddNewTab(string url)
         {
             var newTab = new TabViewModel { Title = "Новая вкладка", Url = url };
+
+            if (string.IsNullOrEmpty(url) || url == "about:home")
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                newTab.Url = $"file:///{System.IO.Path.Combine(baseDir,"Homepage", "home.html").Replace('\\','/')}";
+            }
+
             Tabs.Add(newTab);
             SelectedTab = newTab;
         }
