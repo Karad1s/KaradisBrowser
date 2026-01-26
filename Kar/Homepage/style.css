@@ -1,0 +1,97 @@
+body{
+    background-color: #000;
+    overflow: hidden;
+}
+
+.SearchBar{
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    width: 50%;
+    height: 6%;
+    top: 45%;
+    margin-left: 25%;
+}
+
+    .SearchBar input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: none;
+        font-size: 16px;
+        opacity: 0.6;
+        outline: none;
+    }
+
+.GridMostPopular{
+    position: absolute;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-gap: 20px;
+    width: 35%;
+    top: 60%;
+    margin-left: 33%;
+}
+
+.popularWeb{
+    background-color: #D9D9D9;
+    height: 90px;
+    border-radius: 10px;
+}
+
+.Decors {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    top: 0%;
+}
+
+.Circle1{
+    position: absolute;
+    width: 375px;
+    height: 375px;
+    background-color: #3175D2;
+    border-radius: 100%;
+    top: 17%;
+    left: 10%;
+    filter: blur(20px);
+    opacity: 0.5;
+}
+
+.Circle2{
+    position: absolute;
+    width: 556px;
+    height: 556px;
+    border-radius: 100%;
+    top: 70%;
+    left: -7%;
+    filter: blur(20px);
+    opacity: 0.5;
+    background: radial-gradient(circle, #E5305C 42%, #C912AE 100%);
+}
+
+.Circle3{
+    position: absolute;
+    width: 375px;
+    height: 375px;
+    background-color: #E5305C;
+    border-radius: 100%;
+    top: 40%;
+    right: 20%;
+    filter: blur(20px);
+    opacity: 0.5;
+}
+
+.Circle4{
+    position: absolute;
+    width: 556px;
+    height: 556px;
+    border-radius: 100%;
+    top: 0%;
+    right: -10%;
+    filter: blur(20px);
+    opacity: 0.5;
+    background: radial-gradient(circle, #12C9AE 42%, #3175D2 100%);
+}

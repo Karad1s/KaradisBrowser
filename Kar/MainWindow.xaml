@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Kar" 
         xmlns:cef="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-        Background="#171717"
+        Background="#383737"
         ResizeMode="CanResize"
         StateChanged="MainWindow_StateChanged"
         WindowStyle="None"
@@ -87,7 +87,7 @@
                     <Setter Property="Background" Value="#616161"/>
                 </DataTrigger>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#404040"/>
+                    <Setter Property="Background" Value="#8d8c8c"/>
                 </Trigger>
             </Style.Triggers>
 
@@ -97,7 +97,7 @@
     <Grid x:Name = "RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition x:Name="TopRow" Height="36"/>
-            <RowDefinition x:Name="PanelControl" Height="36"/>
+            <RowDefinition x:Name="PanelControl" Height="45"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -116,7 +116,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{StaticResource TabBorderStyle}" Width="150" Height="30">
+                        <Border Style="{StaticResource TabBorderStyle}" Width="150" Height="30" CornerRadius="9,9,9,9">
                             <Border.InputBindings>
                                 <MouseBinding MouseAction="LeftClick" 
                                                         Command="{Binding DataContext.SelectedTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
@@ -139,7 +139,7 @@
                                 <Button Grid.Column="1" Margin="0,0,5,0" 
                                 Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                 CommandParameter="{Binding}" BorderThickness="0" Width="15" Height="15" Background="Transparent">
-                                    <Image Source="/CloseTabBtn.png" Width="12" Height="12"/>
+                                    <Image Source="/Assets/Icons/CloseTabBtn.png" Width="12" Height="12"/>
                                 </Button>
                             
                             </Grid>
@@ -149,14 +149,13 @@
             </ItemsControl>
 
             <Button Grid.Column="1" 
-                    Content="+"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Left"
+                    Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                    Width="30" Height="30"
                     Command="{Binding AddTabCommand}"
-                    Width="30" Height="30" 
-                    Margin="5,0"
-                    BorderThickness="0"
-                    shell:WindowChrome.IsHitTestVisibleInChrome="True" />
+                    shell:WindowChrome.IsHitTestVisibleInChrome="True">
+
+                <Image Source="/Assets/Icons/AddNewTab.png" Width="20" Height="20"/>
+            </Button>
 
             <StackPanel Orientation="Horizontal" 
                         HorizontalAlignment="Right"
@@ -175,39 +174,41 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1" >
+        <Grid Grid.Row="1" Background="#616161" >
             <!-- Строка управления -->
-            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" VerticalAlignment="Center" Width="140" Margin="0">
-                <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.BackCommand}">
+            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="0">
+                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.BackCommand}">
                     <Image Source="/Assets/Icons/ArrowB.png"/>
                 </Button>
-                <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.ForwardCommand}">
+                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.ForwardCommand}">
                     <Image Source="/Assets/Icons/ArrowF.png"/>
                 </Button>
-                <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.ReloadCommand}">
-                    <Image Source="/Assets/Icons/update.png"/>
+                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.ReloadCommand}">
+                    <Image Source="/Assets/Icons/update.png" Width="20"/>
                 </Button>
-                <Button Width="30" Height="30" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.HomeCommand}">
-                    <Image Source="/Assets/Icons/Home.png"/>
+                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.HomeCommand}">
+                    <Image Source="/Assets/Icons/Home.png" Width="20"/>
                 </Button>
             </StackPanel>
             <!-- Строка Поиска -->
-            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                <ComboBox x:Name="ChangedSearchSystem" DisplayMemberPath="Name" SelectedValuePath="Name"  SelectionChanged="ChangedSearchSystem_SelectionChanged" Width="70"/>
-                <TextBox Width="600"/>
+            <Border CornerRadius="9,9,9,9" Height="25" VerticalAlignment="Top">
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Background="#8D8C8C">
+                    <ComboBox x:Name="ChangedSearchSystem" Background="#E3DBDB" BorderBrush="Transparent" BorderThickness="0" DisplayMemberPath="Name" SelectedValuePath="Name" SelectionChanged="ChangedSearchSystem_SelectionChanged" Width="100"/>
+                    <TextBox Width="600" VerticalAlignment="Center" Text="{Binding SelectedTab.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Background="Transparent" Foreground="White" BorderThickness="0" />
+                </StackPanel>
+            </Border>
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="5,0">
+                <Button Width="25" Height="25" BorderThickness="0">
+                    <Image/>
+                </Button>
+                <Button Width="25" Height="25" BorderThickness="0">
+                    <Image/>
+                </Button>
+                <Button Width="25" Height="25"  BorderThickness="0">
+                    <Image/>
+                </Button>
             </StackPanel>
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center" Width="140" Margin="5,0">
-                <Button Width="30" Height="30" BorderThickness="0">
-                    <Image/>
-                </Button>
-                <Button Width="30" Height="30" BorderThickness="0">
-                    <Image/>
-                </Button>
-                <Button Width="30" Height="30"  BorderThickness="0">
-                    <Image/>
-                </Button>
-            </StackPanel>
-
+            
         </Grid>
 
         <ContentControl Grid.Row="2" Content="{Binding SelectedTab}">

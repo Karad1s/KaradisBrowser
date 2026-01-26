@@ -29,7 +29,7 @@ namespace Kar
             this.DataContext = ViewModel;
             ChangedSearchSystem.ItemsSource = new SearchSystem[]
             {
-                new SearchSystem(   "Google","https://www.google.com/search?q="),
+                new SearchSystem("Google","https://www.google.com/search?q="),
                 new SearchSystem("Bing","https://www.bing.com/search?q="),
                 new SearchSystem("DuckDuckGo","https://duckduckgo.com/?q="),
                 new SearchSystem("Yandex","https://www.yandex.com/search?q="),
