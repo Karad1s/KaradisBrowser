@@ -1,4 +1,5 @@
 ﻿using CefSharp;
+using CefSharp.Wpf;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -21,6 +22,7 @@ namespace Kar
         private WindowState _prevWindowState;
         private WindowStyle _prevWindowStyle;
         private ResizeMode _prevResizeMode;
+        private readonly Dictionary<TabViewModel, ChromiumWebBrowser> _browserCache = new Dictionary<TabViewModel, ChromiumWebBrowser>();
 
         public MainViewModel ViewModel { get; set; }
 
@@ -29,8 +31,8 @@ namespace Kar
             ViewModel = new MainViewModel(this);
             InitializeComponent();
             this.DataContext = ViewModel;
-           
-
+            SetupTabManager();
+            UpdBrowserUI();
         }
 
 
@@ -136,6 +138,41 @@ namespace Kar
                         ViewModel.SelectedTab.Url = searchUrl;
                     }
                 }
+            }
+        }
+
+        private void SetupTabManager()
+        {
+            ViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(ViewModel.SelectedTab)){
+                    UpdBrowserUI();
+                }
+
+            };
+        }
+        private void UpdBrowserUI()
+        {
+            var selectedTab = ViewModel.SelectedTab;
+            if (selectedTab == null) return;
+
+            if (!_browserCache.ContainsKey(selectedTab))
+            {
+                var newBrowser = new ChromiumWebBrowser();
+                Binding myBinding = new Binding("Url");
+                myBinding.Source = selectedTab;
+                myBinding.Mode = BindingMode.TwoWay;
+                newBrowser.SetBinding(ChromiumWebBrowser.AddressProperty, myBinding);
+
+                _browserCache[selectedTab] = newBrowser;
+            }
+
+            var activeBrowser = _browserCache[selectedTab];
+
+            if(BrowserHost.Children.Count == 0 || BrowserHost.Children[0] != activeBrowser)
+            {
+                BrowserHost.Children.Clear();
+                BrowserHost.Children.Add(activeBrowser);
             }
         }
     }

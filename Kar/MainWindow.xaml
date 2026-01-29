@@ -193,27 +193,27 @@
             <!-- Строка Поиска -->
             <Border CornerRadius="15" 
         Height="25" 
-        Width="710"
+        Width="710" 
         Background="#8D8C8C" 
-        VerticalAlignment="Top" 
-        HorizontalAlignment="Center"
-        ClipToBounds="True">
+        VerticalAlignment="Top">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Background="#E3DBDB" 
-                CornerRadius="15,0,0,15" 
-                Padding="8,0,2,0">
+                    <Border Background="#Ebebeb" 
+                CornerRadius="15" 
+                 
+                Padding="8,0">
                         <ComboBox x:Name="ChangedSearchSystem" 
-                      ItemsSource="{Binding SearchSystems}"
+                      ItemsSource="{Binding SearchSystems}" 
                       SelectedItem="{Binding SelectedSearchSystem}"
                       DisplayMemberPath="Name"
-                      Background="#e3dbdb" 
+                      Background="Transparent" 
                       BorderThickness="0" 
                       VerticalAlignment="Center"
+                      Height="20"
                       Width="100"/>
                     </Border>
 
@@ -224,7 +224,6 @@
                  BorderThickness="0" 
                  VerticalContentAlignment="Center"
                  Padding="10,0"
-                 FontSize="13"
                  CaretBrush="White"/>
                 </Grid>
             </Border>
@@ -242,12 +241,8 @@
             
         </Grid>
 
-        <ContentControl Grid.Row="2" Content="{Binding SelectedTab}">
-            <ContentControl.ContentTemplate>
-                <DataTemplate>
-                    <local:TabContent Url="{Binding Url,Mode=TwoWay}"/>
-                </DataTemplate>
-            </ContentControl.ContentTemplate>
-        </ContentControl>
+        <Grid x:Name="BrowserHost" Grid.Row="2" Background="Transparent">
+            
+        </Grid>
     </Grid>
 </Window>

@@ -70,6 +70,8 @@ namespace Kar
            };
             SelectedSearchSystem = SearchSystems[0];
 
+
+
             AddNewTab(string.Empty);
         }
 
