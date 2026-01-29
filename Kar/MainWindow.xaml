@@ -191,11 +191,42 @@
                 </Button>
             </StackPanel>
             <!-- Строка Поиска -->
-            <Border CornerRadius="9,9,9,9" Height="25" VerticalAlignment="Top">
-                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Background="#8D8C8C">
-                    <ComboBox x:Name="ChangedSearchSystem" Background="#E3DBDB" BorderBrush="Transparent" BorderThickness="0" DisplayMemberPath="Name" SelectedValuePath="Name" SelectionChanged="ChangedSearchSystem_SelectionChanged" Width="100"/>
-                    <TextBox Width="600" VerticalAlignment="Center" Text="{Binding SelectedTab.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Background="Transparent" Foreground="White" BorderThickness="0" />
-                </StackPanel>
+            <Border CornerRadius="15" 
+        Height="25" 
+        Width="710"
+        Background="#8D8C8C" 
+        VerticalAlignment="Top" 
+        HorizontalAlignment="Center"
+        ClipToBounds="True">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Background="#E3DBDB" 
+                CornerRadius="15,0,0,15" 
+                Padding="8,0,2,0">
+                        <ComboBox x:Name="ChangedSearchSystem" 
+                      ItemsSource="{Binding SearchSystems}"
+                      SelectedItem="{Binding SelectedSearchSystem}"
+                      DisplayMemberPath="Name"
+                      Background="#e3dbdb" 
+                      BorderThickness="0" 
+                      VerticalAlignment="Center"
+                      Width="100"/>
+                    </Border>
+
+                    <TextBox Grid.Column="1"
+                 Text="{Binding SelectedTab.Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Background="Transparent" 
+                 Foreground="White" 
+                 BorderThickness="0" 
+                 VerticalContentAlignment="Center"
+                 Padding="10,0"
+                 FontSize="13"
+                 CaretBrush="White"/>
+                </Grid>
             </Border>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="5,0">
                 <Button Width="25" Height="25" BorderThickness="0">

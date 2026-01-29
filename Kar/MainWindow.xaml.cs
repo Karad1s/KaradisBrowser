@@ -7,7 +7,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Automation.Provider;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace Kar
 {
@@ -27,14 +29,7 @@ namespace Kar
             ViewModel = new MainViewModel(this);
             InitializeComponent();
             this.DataContext = ViewModel;
-            ChangedSearchSystem.ItemsSource = new SearchSystem[]
-            {
-                new SearchSystem("Google","https://www.google.com/search?q="),
-                new SearchSystem("Bing","https://www.bing.com/search?q="),
-                new SearchSystem("DuckDuckGo","https://duckduckgo.com/?q="),
-                new SearchSystem("Yandex","https://www.yandex.com/search?q="),
-            };
-            ChangedSearchSystem.SelectedIndex = 0;
+           
 
         }
 
@@ -123,7 +118,29 @@ namespace Kar
         {
             if(ChangedSearchSystem.SelectedItem is "Google") {}
         }
+        private void UrlTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var textBox = sender as TextBox;
+                string query = textBox.Text;
+
+                // Проверяем, является ли ввод ссылкой
+                if (!query.Contains(".") || query.Contains(" "))
+                {
+                    // Если это не ссылка, выполняем поиск через выбранную систему
+                    if (ViewModel.SelectedSearchSystem != null && ViewModel.SelectedTab != null)
+                    {
+                        // Формируем полную ссылку: Базовый URL + запрос
+                        string searchUrl = ViewModel.SelectedSearchSystem.Url + Uri.EscapeDataString(query);
+                        ViewModel.SelectedTab.Url = searchUrl;
+                    }
+                }
+            }
+        }
     }
+
+    
 
     public class TabSelectionConverter : IMultiValueConverter
     {

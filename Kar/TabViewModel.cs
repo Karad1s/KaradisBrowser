@@ -40,7 +40,10 @@ namespace Kar
             BackCommand = new RelayCommand(obj => Browser?.Back());
             ForwardCommand = new RelayCommand(obj => Browser?.Forward());
             ReloadCommand = new RelayCommand(obj => Browser?.Reload());
-            HomeCommand = new RelayCommand(obj => Browser?.Load(this.Url));
+            HomeCommand = new RelayCommand(obj =>
+            {
+                LoadHomePage();
+            });
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -62,8 +65,8 @@ namespace Kar
 
         public void LoadHomePage()
         {
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string filePath = System.IO.Path.Combine(baseDirectory, "home.html");
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string filePath = System.IO.Path.Combine(baseDir, "Homepage", "home.html");
 
             if (System.IO.File.Exists(filePath))
             {

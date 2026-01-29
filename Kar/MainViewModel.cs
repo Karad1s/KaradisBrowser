@@ -8,7 +8,7 @@ namespace Kar
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        private TabViewModel? _selectedTab;
+        private TabViewModel _selectedTab;
         private MainWindow mainWindow;
         public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
 
@@ -19,6 +19,19 @@ namespace Kar
             {
                 _selectedTab = value;
                 OnPropertyChanged(nameof(SelectedTab));
+            }
+        }
+
+        public ObservableCollection<SearchSystem> SearchSystems { get; set; }
+
+        private SearchSystem _selectedSearchSystem;
+        public SearchSystem SelectedSearchSystem
+        {
+            get => _selectedSearchSystem;
+            set
+            {
+                _selectedSearchSystem = value;
+                OnPropertyChanged(); 
             }
         }
 
@@ -47,6 +60,15 @@ namespace Kar
                     SelectedTab = tab;
                 }
             });
+
+            SearchSystems = new ObservableCollection<SearchSystem>
+           {
+                new SearchSystem("Google","https://www.google.com/search?q="),
+                new SearchSystem("Bing","https://www.bing.com/search?q="),
+                new SearchSystem("DuckDuckGo","https://duckduckgo.com/?q="),
+                new SearchSystem("Yandex","https://www.yandex.com/search?q="),
+           };
+            SelectedSearchSystem = SearchSystems[0];
 
             AddNewTab(string.Empty);
         }
