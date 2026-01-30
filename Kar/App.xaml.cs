@@ -1,8 +1,10 @@
-﻿using System.Configuration;
+﻿using CefSharp;
+using CefSharp.Wpf;
+using System.Configuration;
 using System.Data;
 using System.Windows;
-using CefSharp;
-using CefSharp.Wpf;
+using System.Windows.Interop;
+using System.Windows.Media;
 
 namespace Kar
 {
@@ -13,6 +15,7 @@ namespace Kar
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+            
             CefSettings settings = new CefSettings();
             settings.CefCommandLineArgs.Add("enable_gpu", "1");
             settings.CefCommandLineArgs.Add("enable-gpu-rasterization", "1");

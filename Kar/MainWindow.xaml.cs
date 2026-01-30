@@ -159,11 +159,15 @@ namespace Kar
             if (!_browserCache.ContainsKey(selectedTab))
             {
                 var newBrowser = new ChromiumWebBrowser();
-                Binding myBinding = new Binding("Url");
-                myBinding.Source = selectedTab;
-                myBinding.Mode = BindingMode.TwoWay;
+                Binding myBinding = new Binding("Url")
+                {
+                    Source = selectedTab,
+                    NotifyOnTargetUpdated = true,
+                    Mode = BindingMode.TwoWay,
+                };
+                
                 newBrowser.SetBinding(ChromiumWebBrowser.AddressProperty, myBinding);
-
+                
                 _browserCache[selectedTab] = newBrowser;
             }
 

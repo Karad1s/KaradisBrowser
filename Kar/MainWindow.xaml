@@ -242,7 +242,17 @@
         </Grid>
 
         <Grid x:Name="BrowserHost" Grid.Row="2" Background="Transparent">
-            
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             From="0.0" To="1.0"
+                                             Duration="0:0:0.3"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
         </Grid>
     </Grid>
 </Window>
