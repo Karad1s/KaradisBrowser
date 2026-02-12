@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace Kar
@@ -11,6 +12,7 @@ namespace Kar
         private TabViewModel _selectedTab;
         private MainWindow mainWindow;
         public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
+        public CompositeCollection TabItems{ get; set; }
 
         public TabViewModel SelectedTab
         {
@@ -67,10 +69,16 @@ namespace Kar
                 new SearchSystem("Bing","https://www.bing.com/search?q="),
                 new SearchSystem("DuckDuckGo","https://duckduckgo.com/?q="),
                 new SearchSystem("Yandex","https://www.yandex.com/search?q="),
+                new SearchSystem ("Yahoo","https://search.yahoo.com/search?p="),
+                new SearchSystem("Ask","https://www.ask.com/web?q="),
+
            };
             SelectedSearchSystem = SearchSystems[0];
 
-
+            TabItems = new CompositeCollection();
+            CompositeCollection cont = new CompositeCollection() { Collection = Tabs};
+            TabItems.Add(cont);
+            TabItems.Add(new AddTabButton { AddTabCommand = AddTabCommand });
 
             AddNewTab(string.Empty);
         }

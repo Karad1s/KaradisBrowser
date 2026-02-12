@@ -14,11 +14,10 @@
     <None Remove="Assets\Icons\ArrowB.svg" />
     <None Remove="Assets\Icons\ArrowF.svg" />
     <None Remove="Assets\Icons\Close.svg" />
-    <None Remove="Assets\Icons\Colapse.svg" />
+    <None Remove="Assets\Icons\Collapse.svg" />
     <None Remove="Assets\Icons\Home.svg" />
-    <None Remove="Assets\Icons\MaximizeWindow.svg" />
+    <None Remove="Assets\Icons\MaxWindow.svg" />
     <None Remove="Assets\Icons\Reload.svg" />
-    <None Remove="Assets\Icons\WindowMaxim.svg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,22 +25,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\Icons\AddNewTab.svg" />
-    <Resource Include="Assets\Icons\ArrowB.svg" />
-    <Resource Include="Assets\Icons\ArrowF.svg" />
-    <Resource Include="Assets\Icons\Close.svg" />
-    <Resource Include="Assets\Icons\CloseTabBtn.png" />
-    <Resource Include="Assets\Icons\Colapse.svg" />
-    <Resource Include="Assets\Icons\Home.svg" />
-    <Resource Include="Assets\Icons\MaximizeWindow.svg" />
-    <Resource Include="Assets\Icons\Reload.svg" />
-    <Resource Include="Assets\Icons\WindowMaxim.svg" />
     <Content Include="Homepage\home.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Homepage\style.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\Icons\AddNewTab.svg" />
+    <Resource Include="Assets\Icons\ArrowB.svg" />
+    <Resource Include="Assets\Icons\ArrowF.svg" />
+    <Resource Include="Assets\Icons\Close.svg" />
+    <Resource Include="Assets\Icons\Collapse.svg" />
+    <Resource Include="Assets\Icons\Home.svg" />
+    <Resource Include="Assets\Icons\MaxWindow.svg" />
+    <Resource Include="Assets\Icons\Reload.svg" />
   </ItemGroup>
 
 </Project>

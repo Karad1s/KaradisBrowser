@@ -1,13 +1,6 @@
-﻿using CefSharp;
-using CefSharp.Wpf;
-using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using CefSharp.Wpf;
 using System.Globalization;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Windows;
-using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
