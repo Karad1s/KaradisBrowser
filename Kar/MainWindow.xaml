@@ -112,9 +112,10 @@
                 <ItemsControl>
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <local:TabPanel/>
+                            <local:TabPanel />
                         </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel> 
+                    </ItemsControl.ItemsPanel>
+                    
                     <ItemsControl.Resources>
                         <DataTemplate DataType="{x:Type local:TabViewModel}">
                             <Border Style="{StaticResource TabBorderStyle}" Height="28">
@@ -136,9 +137,9 @@
                             </Border>
                         </DataTemplate>
 
-                        <DataTemplate DataType="{x:Type local:AddTabButton}">
+                        <DataTemplate DataType = "{x:Type local:AddButtonTab}">
                             <Border Width="20" Height="20" CornerRadius="12" Background="#666666" VerticalAlignment="Center" Margin="5,0">
-                                <Button Background="Transparent" BorderThickness="0" Command="{Binding AddTabCommand}">
+                                <Button Background="Transparent" BorderThickness="0" Command="{Binding AddTabCommand, RelativeSource={RelativeSource AncestorType=Window} }">
                                     <Path Data="M10 4C10 3.44772 9.55228 3 9 3H6C5.44772 3 5 3.44772 5 4V7C5 7.55228 5.44772 8 6 8H9C9.55228 8 10 7.55228 10 7V4Z" Fill="#B3B1B1"/>
                                 </Button>
                             </Border>

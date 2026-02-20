@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Data;
 using System.Windows.Input;
+using System;
 
 namespace Kar
 {
@@ -12,7 +13,10 @@ namespace Kar
         private TabViewModel _selectedTab;
         private MainWindow mainWindow;
         public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
-        public CompositeCollection TabItems{ get; set; }
+
+        public CompositeCollection TabItems { get; set; }
+
+
 
         public TabViewModel SelectedTab
         {
@@ -76,12 +80,14 @@ namespace Kar
             SelectedSearchSystem = SearchSystems[0];
 
             TabItems = new CompositeCollection();
-            CompositeCollection cont = new CompositeCollection() { Collection = Tabs};
-            TabItems.Add(cont);
-            TabItems.Add(new AddTabButton { AddTabCommand = AddTabCommand });
+            var container = new CollectionContainer { Collection = Tabs };
+            TabItems.Add(container);
+            TabItems.Add(new AddButtonTab());
 
             AddNewTab(string.Empty);
         }
+
+        
 
         public void AddNewTab(string url)
         {
@@ -134,4 +140,8 @@ namespace Kar
             remove { CommandManager.RequerySuggested -= value; }
         }
     }
+    public class AddButtonTab
+        {
+            
+        }
 }
