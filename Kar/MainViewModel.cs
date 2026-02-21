@@ -76,10 +76,10 @@ namespace Kar
             SelectedSearchSystem = SearchSystems[0];
 
             TabItems = new CompositeCollection();
-            CompositeCollection cont = new CompositeCollection() { Collection = Tabs};
+            var cont = new CollectionContainer { Collection = Tabs};
             TabItems.Add(cont);
-            TabItems.Add(new AddTabButton { AddTabCommand = AddTabCommand });
-
+            TabItems.Add(new AddTabButton() );
+                
             AddNewTab(string.Empty);
         }
 
@@ -115,6 +115,12 @@ namespace Kar
 
 
     }
+
+    public class AddTabButton
+    {
+        
+    }
+
     public class RelayCommand : ICommand
     {
         private readonly Action<object?> _execute;

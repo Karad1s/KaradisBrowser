@@ -24,6 +24,7 @@
 
     <Window.Resources>
         <local:TabSelectionConverter x:Key="TabSelectionConverter"/>
+        <local:UrlDisplayConverter x:Key="UrlDisplayConverter"/>
         <Style x:Key="ChromeButtonStyle" TargetType="Button">
             <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -117,17 +118,49 @@
                     </ItemsControl.ItemsPanel> 
                     <ItemsControl.Resources>
                         <DataTemplate DataType="{x:Type local:TabViewModel}">
-                            <Border Style="{StaticResource TabBorderStyle}" Height="28">
+                            <Border Height="28" Margin="2,2,2,0" Cursor="Hand">
+                                <Border.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick" 
+                                          Command="{Binding DataContext.SelectedTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                          CommandParameter="{Binding}"/>
+                                </Border.InputBindings>
+
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="#2B2B2B" />
+                                        <Setter Property="CornerRadius" Value="8" />
+
+                                        <Style.Triggers>
+                                            <DataTrigger Value="True">
+                                                <DataTrigger.Binding>
+                                                    <MultiBinding Converter="{StaticResource TabSelectionConverter}">
+                                                        <Binding/>
+                                                        <Binding Path="DataContext.SelectedTab" RelativeSource="{RelativeSource AncestorType= Window}" />
+                                                    </MultiBinding>
+                                                </DataTrigger.Binding>
+
+                                                <Setter Property="Background" Value="#616161"/>
+                                                <Setter Property="CornerRadius" Value="8,8,0,0"/>
+                                            </DataTrigger>
+
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="BorderBrush" Value="#555"/>
+                                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>   
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Text="{Binding Title}" 
                                                VerticalAlignment="Center" 
                                                Margin="10,0,5,0" 
-                                               Foreground="White"/>
+                                               Foreground="White" TextTrimming="CharacterEllipsis"/>
                                     <Button Grid.Column="1" Width="20" Height="20" Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" BorderBrush="Transparent" Margin="0,0,5,0" BorderThickness="0">
                                         <Path Data="M0.366106 0.366133C0.854253 -0.121894 1.64577 -0.121968 2.13387 0.366133L5.66941 3.90167L9.20425 0.366823C9.69239 -0.121315 10.4839 -0.121315 10.972 0.366823C11.4598 0.854986 11.4601 1.64655 10.972 2.13459L7.43717 5.66943L10.972 9.20428C11.4601 9.69238 11.46 10.4839 10.972 10.972C10.4839 11.4602 9.69239 11.4602 9.20425 10.972L5.66941 7.4372L2.13387 10.9727C1.64584 11.4608 0.854268 11.4606 0.366106 10.9727C-0.122032 10.4846 -0.122032 9.69311 0.366106 9.20497L3.90164 5.66943L0.366106 2.1339C-0.122032 1.64576 -0.122032 0.854271 0.366106 0.366133Z" Fill="#B3B1B1"/>
 
@@ -136,9 +169,9 @@
                             </Border>
                         </DataTemplate>
 
-                        <DataTemplate DataType = "{x:Type local:AddButtonTab}">
+                        <DataTemplate DataType = "{x:Type local:AddTabButton}">
                             <Border Width="20" Height="20" CornerRadius="12" Background="#666666" VerticalAlignment="Center" Margin="5,0" BorderThickness="0">
-                                <Button Background="Transparent" BorderThickness="0" Command="{Binding AddTabCommand, RelativeSource={RelativeSource AncestorType=Window} }">
+                                <Button Background="Transparent" BorderThickness="0" Command="{Binding DataContext.AddTabCommand, RelativeSource={RelativeSource AncestorType=Window} }">
                                     <Path Data="M4 0C4.36804 6.55429e-06 4.66674 0.298038 4.66699 0.666016V3.33301H7.33301C7.70121 3.33301 8 3.6318 8 4C7.99988 4.3681 7.70114 4.66602 7.33301 4.66602H4.66699V7.33301C4.66699 7.7012 4.36819 7.99999 4 8C3.6318 8 3.33301 7.70121 3.33301 7.33301V4.66602H0.666992C0.298865 4.66602 0.000115602 4.3681 0 4C0 3.6318 0.298793 3.33301 0.666992 3.33301H3.33301V0.666016C3.33326 0.298033 3.63196 -1.60876e-08 4 0Z" Fill="#B3B1B1"/>
                                 </Button>
                             </Border>
@@ -211,15 +244,26 @@
                       Width="100"/>
                     </Border>
 
-                    <TextBox Grid.Column="1"
-         Text="{Binding SelectedTab.Url, Mode=TwoWay, UpdateSourceTrigger=Explicit}"
-         KeyDown="UrlTextBox_KeyDown"
-         Background="Transparent" 
-         Foreground="White" 
-         BorderThickness="0" 
-         VerticalContentAlignment="Center"
-         Padding="10,0"
-         CaretBrush="White"/>
+                    <TextBox Grid.Column="1" KeyDown="UrlTextBox_KeyDown">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="CaretBrush" Value="White"/>
+                                <Setter Property="Foreground" Value="#9D9B9B"/>
+                                <Setter Property="Padding" Value="10,0" />
+
+                                <Setter Property="Text" Value="{Binding SelectedTab.Url, Converter={StaticResource UrlDisplayConverter}, Mode=TwoWay, UpdateSourceTrigger=Explicit}"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsFocused" Value="True">
+                                        <Setter Property="Text" Value="{Binding SelectedTab.Url, Converter={StaticResource UrlDisplayConverter}, Mode=TwoWay, UpdateSourceTrigger=Explicit}"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
                 </Grid>
             </Border>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="5,0">
