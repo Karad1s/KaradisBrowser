@@ -109,7 +109,7 @@
             </Grid.ColumnDefinitions>
             <Grid Margin="2" shell:WindowChrome.IsHitTestVisibleInChrome="True" Grid.Column="0">
 
-                <ItemsControl>
+                <ItemsControl ItemsSource="{Binding TabItems}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <local:TabPanel/>
@@ -128,7 +128,7 @@
                                                VerticalAlignment="Center" 
                                                Margin="10,0,5,0" 
                                                Foreground="White"/>
-                                    <Button Grid.Column="1" >
+                                    <Button Grid.Column="1" Width="20" Height="20" Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" BorderBrush="Transparent" Margin="0,0,5,0" BorderThickness="0">
                                         <Path Data="M0.366106 0.366133C0.854253 -0.121894 1.64577 -0.121968 2.13387 0.366133L5.66941 3.90167L9.20425 0.366823C9.69239 -0.121315 10.4839 -0.121315 10.972 0.366823C11.4598 0.854986 11.4601 1.64655 10.972 2.13459L7.43717 5.66943L10.972 9.20428C11.4601 9.69238 11.46 10.4839 10.972 10.972C10.4839 11.4602 9.69239 11.4602 9.20425 10.972L5.66941 7.4372L2.13387 10.9727C1.64584 11.4608 0.854268 11.4606 0.366106 10.9727C-0.122032 10.4846 -0.122032 9.69311 0.366106 9.20497L3.90164 5.66943L0.366106 2.1339C-0.122032 1.64576 -0.122032 0.854271 0.366106 0.366133Z" Fill="#B3B1B1"/>
 
                                     </Button>
@@ -136,10 +136,10 @@
                             </Border>
                         </DataTemplate>
 
-                        <DataTemplate DataType="{x:Type local:AddTabButton}">
-                            <Border Width="20" Height="20" CornerRadius="12" Background="#666666" VerticalAlignment="Center" Margin="5,0">
-                                <Button Background="Transparent" BorderThickness="0" Command="{Binding AddTabCommand}">
-                                    <Path Data="M10 4C10 3.44772 9.55228 3 9 3H6C5.44772 3 5 3.44772 5 4V7C5 7.55228 5.44772 8 6 8H9C9.55228 8 10 7.55228 10 7V4Z" Fill="#B3B1B1"/>
+                        <DataTemplate DataType = "{x:Type local:AddButtonTab}">
+                            <Border Width="20" Height="20" CornerRadius="12" Background="#666666" VerticalAlignment="Center" Margin="5,0" BorderThickness="0">
+                                <Button Background="Transparent" BorderThickness="0" Command="{Binding AddTabCommand, RelativeSource={RelativeSource AncestorType=Window} }">
+                                    <Path Data="M4 0C4.36804 6.55429e-06 4.66674 0.298038 4.66699 0.666016V3.33301H7.33301C7.70121 3.33301 8 3.6318 8 4C7.99988 4.3681 7.70114 4.66602 7.33301 4.66602H4.66699V7.33301C4.66699 7.7012 4.36819 7.99999 4 8C3.6318 8 3.33301 7.70121 3.33301 7.33301V4.66602H0.666992C0.298865 4.66602 0.000115602 4.3681 0 4C0 3.6318 0.298793 3.33301 0.666992 3.33301H3.33301V0.666016C3.33326 0.298033 3.63196 -1.60876e-08 4 0Z" Fill="#B3B1B1"/>
                                 </Button>
                             </Border>
                         </DataTemplate>
