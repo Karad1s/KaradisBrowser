@@ -49,8 +49,22 @@ namespace Kar
             {
                 if (obj is TabViewModel tab) 
                 {
-                    if(Tabs.Count() == 1) mainWindow?.Close();
-                    else Tabs.Remove(tab);
+                   int index = Tabs.IndexOf(tab);
+
+                    if (SelectedTab == tab)
+                    {
+                        if (Tabs.Count > 1)
+                        {
+                            int newIndex = Math.Max(0, index - 1);
+                            SelectedTab = Tabs[newIndex];
+                        }
+                        else{
+                            SelectedTab = null;
+                        }
+                    }
+                    Tabs.Remove(tab);
+
+                    if (Tabs.Count == 0) mainWindow.Close();
 
                 }
                 ;
@@ -68,7 +82,7 @@ namespace Kar
                 new SearchSystem("Google","https://www.google.com/search?q="),
                 new SearchSystem("Bing","https://www.bing.com/search?q="),
                 new SearchSystem("DuckDuckGo","https://duckduckgo.com/?q="),
-                new SearchSystem("Yandex","https://www.yandex.com/search?q="),
+                new SearchSystem("Yandex","https://www.yandex.com/search?text="),
                 new SearchSystem ("Yahoo","https://search.yahoo.com/search?p="),
                 new SearchSystem("Ask","https://www.ask.com/web?q="),
 

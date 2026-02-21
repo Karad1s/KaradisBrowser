@@ -25,7 +25,15 @@ namespace Kar
             };
 
             Browser.LifeSpanHandler = new LifeSpanHandler();
-            Browser.DisplayHandler = new CustomDisplayHandler();
+            
+            this.DataContextChanged += (s, e) =>
+            {
+                if (DataContext is TabViewModel viewModel)
+                {
+                    viewModel.Browser = this.Browser;
+                    Browser.DisplayHandler = new CustomDisplayHandler(viewModel, Dispatcher);
+                }
+            };
         }
 
         public string Url

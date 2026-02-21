@@ -153,15 +153,16 @@
                                 
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>   
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-
-                                    <TextBlock Text="{Binding Title}" 
+                                    <Image Grid.Column="0" Source="{Binding Favicon}" Width="12" Height="12" Margin="10,0,5,0"  VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Title}" 
                                                VerticalAlignment="Center" 
                                                Margin="10,0,5,0" 
                                                Foreground="White" TextTrimming="CharacterEllipsis"/>
-                                    <Button Grid.Column="1" Width="20" Height="20" Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" BorderBrush="Transparent" Margin="0,0,5,0" BorderThickness="0">
+                                    <Button Grid.Column="2" Width="20" Height="20" Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" BorderBrush="Transparent" Margin="0,0,5,0" BorderThickness="0">
                                         <Path Data="M0.366106 0.366133C0.854253 -0.121894 1.64577 -0.121968 2.13387 0.366133L5.66941 3.90167L9.20425 0.366823C9.69239 -0.121315 10.4839 -0.121315 10.972 0.366823C11.4598 0.854986 11.4601 1.64655 10.972 2.13459L7.43717 5.66943L10.972 9.20428C11.4601 9.69238 11.46 10.4839 10.972 10.972C10.4839 11.4602 9.69239 11.4602 9.20425 10.972L5.66941 7.4372L2.13387 10.9727C1.64584 11.4608 0.854268 11.4606 0.366106 10.9727C-0.122032 10.4846 -0.122032 9.69311 0.366106 9.20497L3.90164 5.66943L0.366106 2.1339C-0.122032 1.64576 -0.122032 0.854271 0.366106 0.366133Z" Fill="#B3B1B1"/>
 
                                     </Button>
@@ -267,10 +268,10 @@
                 </Grid>
             </Border>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="5,0">
-                <Button Width="25" Height="25" BorderThickness="0">
+                <Button Width="25" Height="25" BorderThickness="0"> <!-- Settings -->
                     <Image/>
                 </Button>
-                <Button Width="25" Height="25" BorderThickness="0">
+                <Button Width="25" Height="25" BorderThickness="0"> <!-- DLS -->
                     <Image/>
                 </Button>
                 <Button Width="25" Height="25"  BorderThickness="0">

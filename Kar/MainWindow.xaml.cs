@@ -38,7 +38,7 @@ namespace Kar
                 this.MaxHeight = SystemParameters.WorkArea.Height;
                 this.MaxWidth = SystemParameters.WorkArea.Width;
 
-                if (RootGrid !=null) RootGrid.Margin = new Thickness(8);
+                if (RootGrid != null) RootGrid.Margin = new Thickness(8);
             }
 
             else if (this.WindowState == WindowState.Maximized && _isManualFullscreen)
@@ -46,7 +46,7 @@ namespace Kar
                 this.MaxHeight = double.PositiveInfinity;
                 this.MaxWidth = double.PositiveInfinity;
                 if (RootGrid != null) RootGrid.Margin = new Thickness(0);
-            }   
+            }
 
             else
             {
@@ -75,9 +75,9 @@ namespace Kar
         private bool _isManualFullscreen = false;
 
         public void SetFullScreen(bool fullscreen)
-        {   
+        {
             _isManualFullscreen = fullscreen;
-            
+
             if (fullscreen)
             {
                 _prevWindowState = WindowState;
@@ -92,7 +92,7 @@ namespace Kar
                 if (TopBar != null) TopBar.Visibility = Visibility.Collapsed;
 
                 if (WindowState == WindowState.Maximized) MainWindow_StateChanged(this, EventArgs.Empty);
-                else 
+                else
                     WindowState = WindowState.Minimized;
 
             }
@@ -113,7 +113,7 @@ namespace Kar
 
         private void ChangedSearchSystem_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            if(ChangedSearchSystem.SelectedItem is "Google") {}
+            if (ChangedSearchSystem.SelectedItem is "Google") { }
         }
         private void UrlTextBox_KeyDown(object sender, KeyEventArgs e)
         {
@@ -135,12 +135,12 @@ namespace Kar
                 }
             }
         }
-
         private void SetupTabManager()
         {
             ViewModel.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(ViewModel.SelectedTab)){
+                if (e.PropertyName == nameof(ViewModel.SelectedTab))
+                {
                     UpdBrowserUI();
                 }
 
@@ -154,52 +154,65 @@ namespace Kar
             if (!_browserCache.ContainsKey(selectedTab))
             {
                 var newBrowser = new ChromiumWebBrowser();
+
+                newBrowser.TitleChanged += (s, args) =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        selectedTab.Title = args.NewValue.ToString() ?? "Загрузка...";
+                    });
+                };
+
+                newBrowser.DisplayHandler = new CustomDisplayHandler(selectedTab, Dispatcher);
+                
                 Binding myBinding = new Binding("Url")
                 {
                     Source = selectedTab,
                     NotifyOnTargetUpdated = true,
                     Mode = BindingMode.TwoWay,
                 };
-                
+
                 newBrowser.SetBinding(ChromiumWebBrowser.AddressProperty, myBinding);
-                
+
                 _browserCache[selectedTab] = newBrowser;
             }
 
             var activeBrowser = _browserCache[selectedTab];
 
-            if(BrowserHost.Children.Count == 0 || BrowserHost.Children[0] != activeBrowser)
+            if (BrowserHost.Children.Count == 0 || BrowserHost.Children[0] != activeBrowser)
             {
                 BrowserHost.Children.Clear();
                 BrowserHost.Children.Add(activeBrowser);
             }
+
+
         }
     }
 
-    
 
-    public class TabSelectionConverter : IMultiValueConverter
-    {
-       public object Convert(object[] values, Type targetType,object parameter, CultureInfo culture)
+        public class TabSelectionConverter : IMultiValueConverter
         {
-            if(values.Length <2) return false;
-            return values[0] == values[1];
+            public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+            {
+                if (values.Length < 2) return false;
+                return values[0] == values[1];
+            }
+            public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+            {
+                throw new NotImplementedException();
+            }
         }
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+
+        public class SearchSystem
         {
-            throw new NotImplementedException();
+            public string Name { get; set; } = "";
+            public string Url { get; set; } = "";
+            public SearchSystem(string name, string url)
+            {
+                Name = name;
+                Url = url;
+            }
         }
     }
 
-    public class SearchSystem
-    {
-        public string Name { get; set; } = "";
-        public string Url { get; set; } = "";
-        public SearchSystem(string name, string url)
-        {
-            Name = name;
-            Url = url;
-        }
-    }
-}
        

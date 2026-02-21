@@ -10,6 +10,7 @@ namespace Kar
     {
         private string? _title;
         private string? _url;
+        private string? _favicon;
         private IWebBrowser? _browser;
 
         public string? Title
@@ -22,6 +23,12 @@ namespace Kar
         {
             get => _url;
             set { _url = value; OnPropertyChanged(); }
+        }
+
+        public string? Favicon
+        {
+            get => _favicon;
+            set { _favicon = value; OnPropertyChanged(); }
         }
 
         public IWebBrowser? Browser
