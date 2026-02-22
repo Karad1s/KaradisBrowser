@@ -1,0 +1,93 @@
+body{
+    background-color: #242424;
+    margin: 0;
+}
+
+header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+}
+
+header .Logo_aria{
+    display: flex;
+    align-items: center;
+}
+
+header h1{
+    padding-left: 10px;
+    color: #FFFFFF;
+}
+
+.search_Bar{
+    display: flex;
+    width: 30%;
+    align-items: center;
+    background-color: #373737;
+    padding: 10px;
+    border-radius: 5px;
+    margin-right: 35%;
+    border: #9A9A9A solid 2px;
+    border-radius: 62px;
+    font-weight: 100;
+}
+
+.search_Bar input{
+    background-color: transparent;
+    border: none;
+    color: #FFFFFF;
+    margin-right: 10px;
+    outline: none;
+    height: 100%;
+}
+
+.search_Bar button{
+    background-color: transparent;
+    width: 20px;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    padding-right: 30px;
+}
+
+
+.search_Bar button img{
+    width: 20px;
+    height: 20px;
+} 
+.settings-layout{
+    font-size: 30px;
+    font-weight: bold;
+    background-color: #474747;
+    width: 20%;
+    height: 100vh;
+    display: flex;
+    border-radius: 0 15px 0 0 ;
+}
+
+.Main{
+    display: flex;
+    width: 80%;
+    color: #FFFFFF;
+}
+
+.sidebar{
+    color: #FFFFFF;
+    
+}
+
+.sidebar .active{
+    border-radius: 0 15px 15px 0;
+    background-color: #373737;
+    
+}
+
+.sidebar .menu-item{
+    cursor: pointer;
+    padding: 32px;
+}
+
+.content{
+    margin-left: 40px;
+}

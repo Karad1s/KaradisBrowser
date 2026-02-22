@@ -16,12 +16,20 @@
     <None Remove="Assets\Icons\Close.svg" />
     <None Remove="Assets\Icons\Collapse.svg" />
     <None Remove="Assets\Icons\Home.svg" />
+    <None Remove="Assets\Icons\Logo.svg" />
     <None Remove="Assets\Icons\MaxWindow.svg" />
     <None Remove="Assets\Icons\Reload.svg" />
+    <None Remove="Assets\Icons\SearchIcon.svg" />
+    <None Remove="Assets\Icons\SettingsButton.svg" />
+    <None Remove="Settings\data.json" />
+    <None Remove="Settings\script.js" />
+    <None Remove="Settings\Settings.html" />
+    <None Remove="Settings\Settings.json" />
+    <None Remove="Settings\style.css" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.Wpf.NETCore" Version="143.0.90" />
+    <PackageReference Include="CefSharp.Wpf.NETCore" Version="145.0.260" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +37,21 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Homepage\style.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Settings\data.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Settings\script.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Settings\Settings.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Settings\Settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Settings\style.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -40,8 +63,11 @@
     <Resource Include="Assets\Icons\Close.svg" />
     <Resource Include="Assets\Icons\Collapse.svg" />
     <Resource Include="Assets\Icons\Home.svg" />
+    <Resource Include="Assets\Icons\Logo.svg" />
     <Resource Include="Assets\Icons\MaxWindow.svg" />
     <Resource Include="Assets\Icons\Reload.svg" />
+    <Resource Include="Assets\Icons\SearchIcon.svg" />
+    <Resource Include="Assets\Icons\SettingsButton.svg" />
   </ItemGroup>
 
 </Project>

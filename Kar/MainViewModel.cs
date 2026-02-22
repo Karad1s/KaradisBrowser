@@ -12,7 +12,7 @@ namespace Kar
         private TabViewModel _selectedTab;
         private MainWindow mainWindow;
         public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
-        public CompositeCollection TabItems{ get; set; }
+        public CompositeCollection TabItems { get; set; }
 
         public TabViewModel SelectedTab
         {
@@ -26,20 +26,20 @@ namespace Kar
 
         public ObservableCollection<SearchSystem> SearchSystems { get; set; }
 
-        private SearchSystem _selectedSearchSystem;
+        public SearchSystem _selectedSearchSystem;
         public SearchSystem SelectedSearchSystem
         {
             get => _selectedSearchSystem;
             set
             {
                 _selectedSearchSystem = value;
-                OnPropertyChanged(); 
+                OnPropertyChanged();
             }
         }
-
         public ICommand AddTabCommand { get; }
         public ICommand CloseTabCommand { get; }
         public ICommand SelectedTabCommand { get; }
+        public ICommand SettingsCommand { get; }
 
         public MainViewModel(MainWindow window)
         {
@@ -47,9 +47,9 @@ namespace Kar
             AddTabCommand = new RelayCommand(obj => AddNewTab(string.Empty));
             CloseTabCommand = new RelayCommand(obj =>
             {
-                if (obj is TabViewModel tab) 
+                if (obj is TabViewModel tab)
                 {
-                   int index = Tabs.IndexOf(tab);
+                    int index = Tabs.IndexOf(tab);
 
                     if (SelectedTab == tab)
                     {
@@ -58,7 +58,8 @@ namespace Kar
                             int newIndex = Math.Max(0, index - 1);
                             SelectedTab = Tabs[newIndex];
                         }
-                        else{
+                        else
+                        {
                             SelectedTab = null;
                         }
                     }
@@ -76,6 +77,11 @@ namespace Kar
                     SelectedTab = tab;
                 }
             });
+            SettingsCommand = new RelayCommand(obj =>
+            {
+                var Url = $"file:///{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings", "settings.html").Replace('\\', '/')}";
+                AddNewTab(Url);
+            });
 
             SearchSystems = new ObservableCollection<SearchSystem>
            {
@@ -90,10 +96,10 @@ namespace Kar
             SelectedSearchSystem = SearchSystems[0];
 
             TabItems = new CompositeCollection();
-            var cont = new CollectionContainer { Collection = Tabs};
+            var cont = new CollectionContainer { Collection = Tabs };
             TabItems.Add(cont);
-            TabItems.Add(new AddTabButton() );
-                
+            TabItems.Add(new AddTabButton());
+
             AddNewTab(string.Empty);
         }
 
@@ -104,7 +110,7 @@ namespace Kar
             if (string.IsNullOrEmpty(url) || url == "about:home")
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                newTab.Url = $"file:///{System.IO.Path.Combine(baseDir,"Homepage", "home.html").Replace('\\','/')}";
+                newTab.Url = $"file:///{System.IO.Path.Combine(baseDir, "Homepage", "home.html").Replace('\\', '/')}";
             }
 
             Tabs.Add(newTab);
@@ -120,10 +126,10 @@ namespace Kar
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() => 
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
-                } );
+                });
             }
         }
 
@@ -132,26 +138,37 @@ namespace Kar
 
     public class AddTabButton
     {
-        
+
     }
 
-    public class RelayCommand : ICommand
+    public class SearchSystem
     {
-        private readonly Action<object?> _execute;
-        private readonly Predicate<object?>? _canExecute;
-
-        public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
+        public string Name { get; set; } = "";
+        public string Url { get; set; } = "";
+        public SearchSystem(string name, string url)
         {
-            _execute = execute;
-            _canExecute = canExecute;
-        }
-
-        public bool CanExecute(object? parameter) => _canExecute == null || _canExecute(parameter);
-        public void Execute(object? parameter) => _execute(parameter);
-        public event EventHandler? CanExecuteChanged
-        {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
+            Name = name;
+            Url = url;
         }
     }
+        public class RelayCommand : ICommand
+        {
+            private readonly Action<object?> _execute;
+            private readonly Predicate<object?>? _canExecute;
+
+            public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
+            {
+                _execute = execute;
+                _canExecute = canExecute;
+            }
+
+            public bool CanExecute(object? parameter) => _canExecute == null || _canExecute(parameter);
+            public void Execute(object? parameter) => _execute(parameter);
+            public event EventHandler? CanExecuteChanged
+            {
+                add { CommandManager.RequerySuggested += value; }
+                remove { CommandManager.RequerySuggested -= value; }
+            }
+        }
+    
 }

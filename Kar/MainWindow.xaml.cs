@@ -28,6 +28,7 @@ namespace Kar
             this.DataContext = ViewModel;
             SetupTabManager();
             UpdBrowserUI();
+            DoDelCache(ViewModel.SelectedTab);
         }
 
 
@@ -164,7 +165,7 @@ namespace Kar
                 };
 
                 newBrowser.DisplayHandler = new CustomDisplayHandler(selectedTab, Dispatcher);
-                
+
                 Binding myBinding = new Binding("Url")
                 {
                     Source = selectedTab,
@@ -187,22 +188,15 @@ namespace Kar
 
 
         }
-    }
-
-
-        public class TabSelectionConverter : IMultiValueConverter
+        private void DoDelCache(TabViewModel tab)
         {
-            public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+            if (_browserCache.ContainsKey(tab))
             {
-                if (values.Length < 2) return false;
-                return values[0] == values[1];
-            }
-            public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-            {
-                throw new NotImplementedException();
+                var browser = _browserCache[tab];
+                browser.Dispose();
+                _browserCache.Remove(tab);
             }
         }
-
         public class SearchSystem
         {
             public string Name { get; set; } = "";
@@ -214,5 +208,22 @@ namespace Kar
             }
         }
     }
+
+    public class TabSelectionConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values.Length < 2) return false;
+            return values[0] == values[1];
+        }
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+
+        
+    
 
        
