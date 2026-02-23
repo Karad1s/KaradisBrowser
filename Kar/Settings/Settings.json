@@ -1,6 +1,8 @@
 {
+  {
     "id": "Dark mode",
     "label": "Темная тема",
     "type": "toggle",
     "value": true
+  }
 }

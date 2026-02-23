@@ -244,27 +244,54 @@
                       Height="22"
                       Width="100"/>
                     </Border>
+                    <Grid Grid.Column="1">
+                        <TextBox x:Name="UrlTextBox" TextChanged="UrlTextBox_TextChanged" KeyDown="UrlTextBox_KeyDown" Margin="0,0,0,-3" Height="25" VerticalAlignment="Center" FontSize="14">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="CaretBrush" Value="White"/>
+                                    <Setter Property="Foreground" Value="#9D9B9B"/>
+                                    <Setter Property="Padding" Value="10,0" />
 
-                    <TextBox Grid.Column="1" KeyDown="UrlTextBox_KeyDown">
-                        <TextBox.Style>
-                            <Style TargetType="TextBox">
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Setter Property="CaretBrush" Value="White"/>
-                                <Setter Property="Foreground" Value="#9D9B9B"/>
-                                <Setter Property="Padding" Value="10,0" />
+                                    <Setter Property="Text" Value="{Binding SelectedTab.Url, Converter={StaticResource UrlDisplayConverter}, Mode=TwoWay, UpdateSourceTrigger=Explicit}"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsFocused" Value="True">
+                                            <Setter Property="Text" Value="{Binding SelectedTab.Url, Converter={StaticResource UrlDisplayConverter}, Mode=TwoWay, UpdateSourceTrigger=Explicit}"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
 
-                                <Setter Property="Text" Value="{Binding SelectedTab.Url, Converter={StaticResource UrlDisplayConverter}, Mode=TwoWay, UpdateSourceTrigger=Explicit}"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsFocused" Value="True">
-                                        <Setter Property="Text" Value="{Binding SelectedTab.Url, Converter={StaticResource UrlDisplayConverter}, Mode=TwoWay, UpdateSourceTrigger=Explicit}"/>
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBox.Style>
-                    </TextBox>
+                        <Popup x:Name="SuggestionPopup"
+                               PlacementTarget="{Binding ElementName=UrlTextBox}"
+                               Placement="Bottom"
+                               StaysOpen="True"
+                               Width="580"
+                               AllowsTransparency="True">
+                            <Border Background="#8D8C8C" BorderBrush="Transparent" BorderThickness="1" CornerRadius="0,0,10,10" Width="{Binding ElementName=UrlTextBox, Path=ActualWidth}">
+                                <ListBox x:Name="SuggestionList"
+                                         
+                                         Background="Transparent"
+                                            BorderThickness="0"
+                                            Foreground="White"
+                                         SelectionChanged="SuggestionList_SelectionChanged">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" 
+                                                Fill="#B3B1B1" Stretch="Uniform" Width="12" Height="12" Margin="0,0,10,0"/>
+                                                <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="15"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
+                    </Grid>
                 </Grid>
             </Border>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="5,0">

@@ -1,7 +1,12 @@
-﻿using CefSharp.Wpf;
+﻿using CefSharp;
+using CefSharp.Wpf;
 using System;
-using System.Collections.Generic;   
-using System.Globalization;
+using System.Collections;
+using System.Collections.Generic;  
+using System.Globalization; 
+using System.Linq;
+using System.Threading.Tasks;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -24,11 +29,21 @@ namespace Kar
         public MainWindow()
         {
             ViewModel = new MainViewModel(this);
+
+            ViewModel.Tabs.CollectionChanged += (s, e) =>
+            {
+                if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+                {
+                    foreach (TabViewModel oldTab in e.OldItems)
+                    {
+                        DoDelCache(oldTab);
+                    }
+                }
+            };
             InitializeComponent();
             this.DataContext = ViewModel;
             SetupTabManager();
             UpdBrowserUI();
-            DoDelCache(ViewModel.SelectedTab);
         }
 
 
@@ -116,7 +131,61 @@ namespace Kar
         {
             if (ChangedSearchSystem.SelectedItem is "Google") { }
         }
-        private void UrlTextBox_KeyDown(object sender, KeyEventArgs e)
+
+        private void SuggestionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(SuggestionList.SelectedItem is string selected)
+            {
+                UrlTextBox.Text = selected;
+                SuggestionPopup.IsOpen = false;
+
+                NegativeToUrl(selected);
+            }
+        }
+
+        private void NegativeToUrl(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return;
+
+            if (!query.Contains(".") || query.Contains(" "))
+            {
+                if (ViewModel.SelectedSearchSystem != null && ViewModel.SelectedTab != null)
+                {
+                    string searchUrl = ViewModel.SelectedSearchSystem.Url + Uri.EscapeDataString(query);
+                    ViewModel.SelectedTab.Url = searchUrl;
+                }
+            }
+            else
+            {
+                // Если это ссылка, просто обновляем Url во вкладке
+                if (ViewModel.SelectedTab != null)
+                    ViewModel.SelectedTab.Url = query.StartsWith("http") ? query : "http://" + query;
+            }
+        }
+        private async void UrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string query = UrlTextBox.Text;
+            if (query.Length > 2 && !query.StartsWith("http"))
+            {
+                var suggestions = await GetSearchSuggestions(query);
+
+                if (suggestions.Any())
+                {
+                    SuggestionList.ItemsSource = suggestions;
+                    SuggestionPopup.IsOpen = true;
+                }
+                else
+                {
+                    SuggestionPopup.IsOpen = false;
+                }
+            }
+            else
+            {
+                SuggestionPopup.IsOpen = false;
+            }
+        }
+
+        private async void UrlTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
@@ -135,6 +204,28 @@ namespace Kar
                     }
                 }
             }
+        }
+
+        private async Task<List<string>> GetSearchSuggestions(string query)
+        {
+            try
+            {
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    string url = $"http://suggestqueries.google.com/complete/search?client=firefox&q={Uri.EscapeDataString(query)}";
+                    var response = await client.GetStringAsync(url);
+
+                    using (JsonDocument json = JsonDocument.Parse(response))
+                    {
+                        // Исправлено CS0021
+                        return json.RootElement[1]
+                            .EnumerateArray()
+                            .Select(x => x.GetString())
+                            .ToList();
+                    }
+                }
+            }
+            catch { return new List<string>(); }
         }
         private void SetupTabManager()
         {
@@ -155,6 +246,10 @@ namespace Kar
             if (!_browserCache.ContainsKey(selectedTab))
             {
                 var newBrowser = new ChromiumWebBrowser();
+                newBrowser.MenuHandler = new CustomMenuHandler();
+
+                //newBrowser.JavascriptObjectRepository.Settings.LegacyBindingEnabled = true;
+                newBrowser.JavascriptObjectRepository.Register("SettingsHandler", new SettingBridge(), options: BindingOptions.DefaultBinder);
 
                 newBrowser.TitleChanged += (s, args) =>
                 {
@@ -190,12 +285,41 @@ namespace Kar
         }
         private void DoDelCache(TabViewModel tab)
         {
-            if (_browserCache.ContainsKey(tab))
+
+            if (tab ==null || !_browserCache.ContainsKey(tab)) return;
+
+            var browser = _browserCache[tab];
+            BindingOperations.ClearAllBindings(browser);
+
+            if (BrowserHost.Children.Contains(browser))
             {
-                var browser = _browserCache[tab];
-                browser.Dispose();
-                _browserCache.Remove(tab);
+                BrowserHost.Children.Clear();
             }
+
+            browser.Dispose();
+
+            _browserCache.Remove(tab);
+        }
+
+        public void ShowDevTools()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var window = (MainWindow)Application.Current.MainWindow;
+                var selectedTab = window.ViewModel.SelectedTab;
+
+                if (selectedTab != null && window._browserCache.TryGetValue(selectedTab, out var browser))
+                {
+                    var windowInfo = new WindowInfo();
+
+                    var helper = new System.Windows.Interop.WindowInteropHelper(window);
+                    IntPtr hostHandle = helper.Handle;
+
+                    windowInfo.SetAsChild(hostHandle, (int)browser.ActualWidth - 500, 0, (int)browser.ActualWidth, (int)browser.ActualHeight);
+
+                    browser.ShowDevTools(windowInfo);
+                }
+            });
         }
         public class SearchSystem
         {
@@ -207,6 +331,8 @@ namespace Kar
                 Url = url;
             }
         }
+
+        
     }
 
     public class TabSelectionConverter : IMultiValueConverter
@@ -219,6 +345,15 @@ namespace Kar
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public class SettingBridge
+    {
+        public void OpenSettings()
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true });
+
         }
     }
 }
