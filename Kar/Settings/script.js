@@ -1,12 +1,19 @@
 let settingsData = {};
 
 async function init() {
+
     try {
-        const response = await fetch('data.json');
-        settingsData = await response.json();
+        await CefSharp.BindObjectAsync("csharpSettingsBridge");
+
+        const settingsJson = await csharpSettingsBridge.getSettings();
+        settingsData = JSON.parse(settingsJson);
+        console.log("Настройки получены из C#:", settingsData);
+
+        setupEventListeners();
         showSelection('security');
-    } catch (err) {
-        console.error("Initialization failed:", err);
+
+    } catch (error) {
+        console.error("Критическая ошибка инициализации моста:", error);
     }
 
     document.querySelector('.sidebar').addEventListener('click', (event) => {
@@ -20,6 +27,18 @@ async function init() {
             }
         }
     })
+}
+
+function setupEventListeners() {
+    document.querySelector('.sidebar').addEventListener('click', (event) => {
+        const item = event.target.closest('.menu-item');
+        if (item) {
+            const category = item.getAttribute('data-category');
+            if (category && settingsData[category]) {
+                showSelection(category);
+            }
+        }
+    });
 }
 
 function showSelection(category) {
@@ -42,7 +61,7 @@ function showSelection(category) {
 
     // Update UI active state
     document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.toggle('active', iitem.getAttribute('data-category') === section.title);
+        item.classList.toggle('active', item.getAttribute('data-category') === category);
     });
 }
 
@@ -72,22 +91,9 @@ function renderSingleSetting(item) {
     `;
     return container;
 }
-
-async function loadSettings() {
-    try {
-        const response = await fetch('settings.json');
-        const settings = await response.json();
-        const list = document.getElementById('settings-list');
-
-        if (!Array.isArray(settings)) return;
-
-        settings.forEach(item => {
-            list.appendChild(renderSingleSetting(item));
-        });
-    } catch (err) {
-        console.error("Settings load error:", err);
-    }
+async function SaveSettings() {
+    const jsonToSave = JSON.stringify(settingsData, null, 2);
+    await csharpSettingsBridge.saveSettings(jsonToSave);
 }
 
-init();
-loadSettings();
+document.addEventListener("DOMContentLoaded", init);

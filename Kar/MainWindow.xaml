@@ -202,9 +202,9 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1" Background="#616161" >
+        <Grid Grid.Row="1" Background="#616161">
             <!-- Строка управления -->
-            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="0">
+            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="0,5,0,0">
                 <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.BackCommand}">
                     <Path Data="M16.0588 8.36377C16.6111 8.36377 17.0588 7.91605 17.0588 7.36377C17.0588 6.81148 16.6111 6.36377 16.0588 6.36377V7.36377V8.36377ZM0.292909 6.65666C-0.0976162 7.04719 -0.0976162 7.68035 0.292909 8.07088L6.65687 14.4348C7.04739 14.8254 7.68056 14.8254 8.07108 14.4348C8.46161 14.0443 8.46161 13.4111 8.07108 13.0206L2.41423 7.36377L8.07108 1.70692C8.46161 1.31639 8.46161 0.683226 8.07108 0.292702C7.68056 -0.0978227 7.04739 -0.0978227 6.65687 0.292702L0.292909 6.65666ZM16.0588 7.36377V6.36377L1.00002 6.36377V7.36377V8.36377L16.0588 8.36377V7.36377Z" Fill="#D9D9D9" />
                 </Button>
@@ -224,10 +224,11 @@
         Height="25" 
         Width="710" 
         Background="#8D8C8C" 
-        VerticalAlignment="Top">
+        VerticalAlignment="Top"
+        Margin="0,5,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
@@ -244,8 +245,8 @@
                       Height="22"
                       Width="100"/>
                     </Border>
-                    <Grid Grid.Column="1">
-                        <TextBox x:Name="UrlTextBox" TextChanged="UrlTextBox_TextChanged" KeyDown="UrlTextBox_KeyDown" Margin="0,0,0,-3" Height="25" VerticalAlignment="Center" FontSize="14">
+                    <Grid Grid.Column="1" >
+                        <TextBox x:Name="UrlTextBox" TextChanged="UrlTextBox_TextChanged" KeyDown="UrlTextBox_KeyDown" Margin="5,0,0,0" Height="25" VerticalAlignment="Center" FontSize="14">
                             <TextBox.Style>
                                 <Style TargetType="TextBox">
                                     <Setter Property="Background" Value="Transparent"/>
@@ -269,7 +270,7 @@
                         <Popup x:Name="SuggestionPopup"
                                PlacementTarget="{Binding ElementName=UrlTextBox}"
                                Placement="Bottom"
-                               StaysOpen="True"
+                               StaysOpen="False"
                                Width="580"
                                AllowsTransparency="True">
                             <Border Background="#8D8C8C" BorderBrush="Transparent" BorderThickness="1" CornerRadius="0,0,10,10" Width="{Binding ElementName=UrlTextBox, Path=ActualWidth}">
@@ -294,15 +295,21 @@
                     </Grid>
                 </Grid>
             </Border>
-            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="5,0">
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="0,5">
                 <Button Width="25" Height="25" BorderThickness="0" Background="Transparent" Cursor="Hand" Command="{Binding DataContext.SettingsCommand, RelativeSource={RelativeSource AncestorType=Window}}"> <!-- Settings -->
                     <Path Data="M6.90153 1.2531C7.27905 -0.417668 9.65983 -0.417734 10.0373 1.2531C10.2819 2.33602 11.5243 2.85075 12.4631 2.25799C13.9114 1.34346 15.5945 3.02739 14.6798 4.47576C14.0876 5.4143 14.6022 6.65678 15.6847 6.90154C17.3556 7.27897 17.3556 9.65985 15.6847 10.0373C14.6022 10.2821 14.0873 11.5245 14.6798 12.4631C15.5945 13.9115 13.9114 15.5945 12.4631 14.6799C11.5245 14.0873 10.2821 14.6022 10.0373 15.6847C9.65984 17.3556 7.27896 17.3556 6.90153 15.6847C6.65677 14.6022 5.4143 14.0876 4.47575 14.6799C3.02739 15.5945 1.34347 13.9114 2.25797 12.4631C2.85074 11.5244 2.33601 10.2819 1.25309 10.0373C-0.417733 9.65984 -0.417662 7.27907 1.25309 6.90154C2.33591 6.65695 2.85048 5.41443 2.25797 4.47576C1.34335 3.02737 3.02736 1.34336 4.47575 2.25799C5.41442 2.85049 6.65694 2.33592 6.90153 1.2531ZM8.46989 3.93963C5.96793 3.93973 3.93972 5.96795 3.93962 8.4699C3.93988 10.9717 5.96803 13.0001 8.46989 13.0002C10.9716 12.9999 12.9999 10.9716 13.0002 8.4699C13.0001 5.96804 10.9717 3.93989 8.46989 3.93963Z" Fill="#D9D9D9"/>
                 </Button>
-                <Button Width="25" Height="25" BorderThickness="0"> <!-- DLS -->
-                    <Image/>
+                <Button Width="25" Height="25" BorderThickness="0" Background="Transparent">
+                    <Path Fill="#D9D9D9">
+                        <Path.Data>
+                            <GeometryGroup>
+                                <PathGeometry Figures="M7.5 0C8.70949 0 9.71858 0.85886 9.9502 2H13C14.1046 2 15 2.89543 15 4V7.0498C16.1411 7.28142 17 8.29051 17 9.5C17 10.7094 16.141 11.7175 15 11.9492V15C15 16.1046 14.1046 17 13 17H2C0.895431 17 5.63733e-08 16.1046 0 15V12.9639C0.163332 12.9872 0.330206 13 0.5 13C2.433 13 4 11.433 4 9.5C4 7.567 2.433 6 0.5 6C0.330253 6 0.163289 6.0118 0 6.03516V4C0 2.89543 0.895431 2 2 2H5.0498C5.28142 0.85886 6.29051 0 7.5 0Z"/>
+                            </GeometryGroup>
+                        </Path.Data>
+                    </Path>
                 </Button>
-                <Button Width="25" Height="25"  BorderThickness="0">
-                    <Image/>
+                <Button Width="25" Height="25"  BorderThickness="0" Background="Transparent">
+                    <Path Data="M9.5 15.9961C9.77614 15.9961 10 16.22 10 16.4961C10 16.7722 9.77614 16.9961 9.5 16.9961H0.5C0.223858 16.9961 0 16.7722 0 16.4961C0 16.22 0.223858 15.9961 0.5 15.9961H9.5ZM5 0C5.27607 0 5.49989 0.223952 5.5 0.5V11.9824L7.82812 9.65332C8.02325 9.45831 8.33989 9.45854 8.53516 9.65332C8.73038 9.84855 8.73031 10.1651 8.53516 10.3604L5.35352 13.543C5.15829 13.738 4.84171 13.738 4.64648 13.543L1.46484 10.3604C1.26969 10.1651 1.26962 9.84855 1.46484 9.65332C1.66011 9.45854 1.97675 9.45831 2.17188 9.65332L4.5 11.9824V0.5C4.50011 0.223952 4.72393 0 5 0Z" Fill="#D9D9D9"/>
                 </Button>
             </StackPanel>
 

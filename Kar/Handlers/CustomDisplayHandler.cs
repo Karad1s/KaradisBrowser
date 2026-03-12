@@ -4,7 +4,7 @@ using System.Windows.Threading;
 using CefSharp;
 using CefStruct = CefSharp.Structs;
 
-namespace Kar
+namespace Kar.Handlers
 {
     public class CustomDisplayHandler : IDisplayHandler
     {

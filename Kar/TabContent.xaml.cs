@@ -1,8 +1,8 @@
 ﻿using CefSharp;
-using CefSharp.Handler;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Kar.Handlers;
 
 
 
@@ -16,15 +16,8 @@ namespace Kar
         public TabContent()
         {
             InitializeComponent();
-            this.DataContextChanged += (s, e) =>
-            {
-                if (DataContext is TabViewModel viewModel)
-                {
-                    viewModel.Browser = this.Browser;
-                }
-            };
 
-            Browser.LifeSpanHandler = new LifeSpanHandler();
+            Browser.LifeSpanHandler = new CustomLifeSpanHandler();
             
             this.DataContextChanged += (s, e) =>
             {

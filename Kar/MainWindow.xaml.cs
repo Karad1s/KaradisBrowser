@@ -1,16 +1,12 @@
 ﻿using CefSharp;
 using CefSharp.Wpf;
-using System;
-using System.Collections;
-using System.Collections.Generic;  
 using System.Globalization; 
-using System.Linq;
-using System.Threading.Tasks;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using Kar.Handlers;
 
 namespace Kar
 {
@@ -57,13 +53,6 @@ namespace Kar
                 if (RootGrid != null) RootGrid.Margin = new Thickness(8);
             }
 
-            else if (this.WindowState == WindowState.Maximized && _isManualFullscreen)
-            {
-                this.MaxHeight = double.PositiveInfinity;
-                this.MaxWidth = double.PositiveInfinity;
-                if (RootGrid != null) RootGrid.Margin = new Thickness(0);
-            }
-
             else
             {
                 this.MaxHeight = double.PositiveInfinity;
@@ -72,7 +61,11 @@ namespace Kar
             }
         }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e) => this.Close();
+        private void CloseButton_Click(object sender, RoutedEventArgs e) 
+        {
+            Cef.Shutdown();
+            Close();
+        }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e) => this.WindowState = WindowState.Minimized;
 
@@ -127,7 +120,7 @@ namespace Kar
             }
         }
 
-        private void ChangedSearchSystem_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void ChangedSearchSystem_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ChangedSearchSystem.SelectedItem is "Google") { }
         }
@@ -139,11 +132,11 @@ namespace Kar
                 UrlTextBox.Text = selected;
                 SuggestionPopup.IsOpen = false;
 
-                NegativeToUrl(selected);
+                MapsToUrl(selected);
             }
         }
 
-        private void NegativeToUrl(string query)
+        private void MapsToUrl(string query)
         {
             if (string.IsNullOrWhiteSpace(query)) return;
 
@@ -172,6 +165,7 @@ namespace Kar
                 if (suggestions.Any())
                 {
                     SuggestionList.ItemsSource = suggestions;
+                    SuggestionPopup.PlacementTarget = UrlTextBox;
                     SuggestionPopup.IsOpen = true;
                 }
                 else
@@ -246,10 +240,19 @@ namespace Kar
             if (!_browserCache.ContainsKey(selectedTab))
             {
                 var newBrowser = new ChromiumWebBrowser();
+                newBrowser = browser
+
                 newBrowser.MenuHandler = new CustomMenuHandler();
+                newBrowser.LifeSpanHandler = new CustomLifeSpanHandler();
+                newBrowser.RequestHandler = new CustomRequestHandler();
+                newBrowser.DownloadHandler = new CustomDownloadHandler();
+                string SettingsPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Settings", "settings.json");
+                var settingsService = new Settings.FileSettingsService(SettingsPath);
+                var settingsBridge = new Settings.SettingsBridge(settingsService);
 
                 //newBrowser.JavascriptObjectRepository.Settings.LegacyBindingEnabled = true;
                 newBrowser.JavascriptObjectRepository.Register("SettingsHandler", new SettingBridge(), options: BindingOptions.DefaultBinder);
+                newBrowser.JavascriptObjectRepository.Register("csharpSettingsBridge", settingsBridge, options: BindingOptions.DefaultBinder);
 
                 newBrowser.TitleChanged += (s, args) =>
                 {
@@ -321,17 +324,6 @@ namespace Kar
                 }
             });
         }
-        public class SearchSystem
-        {
-            public string Name { get; set; } = "";
-            public string Url { get; set; } = "";
-            public SearchSystem(string name, string url)
-            {
-                Name = name;
-                Url = url;
-            }
-        }
-
         
     }
 

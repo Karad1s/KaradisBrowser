@@ -1,9 +1,9 @@
 ﻿using CefSharp;
 using System.Windows;
 
-namespace Kar
+namespace Kar.Handlers
 {
-    public class LifeSpanHandler : ILifeSpanHandler
+    public class CustomLifeSpanHandler : ILifeSpanHandler
     {
         public MainViewModel MainViewModel
         {
@@ -19,23 +19,26 @@ namespace Kar
 
             bool isAuth = targetUrl.Contains("accounts.google.com") ||
                   targetUrl.Contains("facebook.com/dialog/oauth") ||
-                  targetUrl.Contains("login");
+                  targetUrl.Contains("login") ||
+                  targetUrl.Contains("auth");
 
-            if (isAuth || targetDisposition == WindowOpenDisposition.NewPopup)
+            if (!isAuth)
             {
-                return false;
-            }
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                var mainWindow = Application.Current.MainWindow as MainWindow;
-                if (mainWindow != null)
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    MainViewModel.AddNewTab(targetUrl);
-                }
-            });
+                    var mainWindow = Application.Current.MainWindow as MainWindow;
 
-            return true;
+                    if (mainWindow != null)
+                    {
+                        mainWindow.ViewModel.AddNewTab(targetUrl);
+                    }
+                });
+                 return true;
+            }
+            
+            
+
+            return false;
         }
 
         public void OnAfterCreated(IWebBrowser chromiumWebBrowser, IBrowser browser) { }

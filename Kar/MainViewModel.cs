@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using Kar.Settings; 
 
 namespace Kar
 {
@@ -13,6 +14,7 @@ namespace Kar
     {
         private TabViewModel _selectedTab;
         private MainWindow mainWindow;
+        private IWebBrowser? _browser;
         public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
         public CompositeCollection TabItems { get; set; }
 
@@ -38,10 +40,22 @@ namespace Kar
                 OnPropertyChanged();
             }
         }
+
+        public IWebBrowser? Browser
+        {
+            get => _browser;
+            set { _browser = value; OnPropertyChanged(); }
+        }
         public ICommand AddTabCommand { get; }
         public ICommand CloseTabCommand { get; }
         public ICommand SelectedTabCommand { get; }
+        public ICommand BackCommand { get; }
+        public ICommand ForwardCommand { get; }
+        public ICommand ReloadCommand { get; }
+        public ICommand HomeCommand { get; }
         public ICommand SettingsCommand { get; }
+
+        public ICommand Extentions { get; }
 
         public MainViewModel(MainWindow window)
         {
@@ -67,8 +81,9 @@ namespace Kar
                     }
                     Tabs.Remove(tab);
 
-                    if (Tabs.Count == 0) mainWindow.Close();
-
+                    if (Tabs.Count == 0) {
+                        mainWindow.Close();
+                    }
                 }
                 ;
             });
@@ -79,9 +94,10 @@ namespace Kar
                     SelectedTab = tab;
                 }
             });
+
             SettingsCommand = new RelayCommand(obj =>
             {
-                var Url = $"file:///{System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings", "settings.html").Replace('\\', '/')}";
+                var Url = $"file:///{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings", "settings.html").Replace('\\', '/')}";
                 AddNewTab(Url);
             });
 
@@ -112,7 +128,7 @@ namespace Kar
             if (string.IsNullOrEmpty(url) || url == "about:home")
             {
                 string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                newTab.Url = $"file:///{System.IO.Path.Combine(baseDir, "Homepage", "home.html").Replace('\\', '/')}";
+                newTab.Url = $"file:///{Path.Combine(baseDir, "Homepage", "home.html").Replace('\\', '/')}";
             }
 
             Tabs.Add(newTab);
@@ -122,13 +138,13 @@ namespace Kar
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? Name = null)
         {
-            if (System.Windows.Application.Current.Dispatcher.CheckAccess())
+            if (Application.Current.Dispatcher.CheckAccess())
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                Application.Current.Dispatcher.Invoke(() =>
                 {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
                 });
@@ -139,7 +155,6 @@ namespace Kar
 
     public class AddTabButton
     {
-
     }
 
     public class SearchSystem

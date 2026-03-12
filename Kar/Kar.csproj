@@ -15,6 +15,8 @@
     <None Remove="Assets\Icons\ArrowF.svg" />
     <None Remove="Assets\Icons\Close.svg" />
     <None Remove="Assets\Icons\Collapse.svg" />
+    <None Remove="Assets\Icons\DownloadButton.svg" />
+    <None Remove="Assets\Icons\ExtensionsButton.svg" />
     <None Remove="Assets\Icons\Home.svg" />
     <None Remove="Assets\Icons\Logo.svg" />
     <None Remove="Assets\Icons\MaxWindow.svg" />
@@ -33,6 +35,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\Icons\DownloadButton.svg" />
+    <Resource Include="Assets\Icons\ExtensionsButton.svg" />
     <Content Include="Homepage\home.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

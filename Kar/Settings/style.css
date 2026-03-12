@@ -1,6 +1,13 @@
-body{
+body {
     background-color: #242424;
     margin: 0;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1950px;
+    padding: 0 15px;
+    margin: 0 auto;
 }
 
 header{
@@ -68,7 +75,7 @@ header h1{
 
 .Main{
     display: flex;
-    width: 80%;
+    width: 100%;
     color: #FFFFFF;
 }
 

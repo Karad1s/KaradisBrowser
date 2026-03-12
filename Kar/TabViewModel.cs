@@ -1,7 +1,8 @@
-﻿using System.ComponentModel;
+﻿using CefSharp;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using CefSharp;
+
 
 
 namespace Kar
@@ -44,12 +45,31 @@ namespace Kar
 
         public TabViewModel()
         {
-            BackCommand = new RelayCommand(obj => Browser?.Back());
-            ForwardCommand = new RelayCommand(obj => Browser?.Forward());
+            BackCommand = new RelayCommand(obj =>
+            {
+                
+                if (Browser?.CanGoBack == true)
+                {
+                    Browser.Back();
+                }
+            });
+            ForwardCommand = new RelayCommand(obj =>
+            {
+                if (Browser?.CanGoForward == true)
+                {
+                    Browser.Forward();
+                }
+            });
             ReloadCommand = new RelayCommand(obj => Browser?.Reload());
             HomeCommand = new RelayCommand(obj =>
             {
-                LoadHomePage();
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string filePath = System.IO.Path.Combine(baseDir, "Homepage", "home.html");
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    this.Url = $"file:///{filePath.Replace('\\', '/')}";
+                }
             });
         }
 
@@ -67,17 +87,6 @@ namespace Kar
                 {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
                 });
-            }
-        }
-
-        public void LoadHomePage()
-        {
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string filePath = System.IO.Path.Combine(baseDir, "Homepage", "home.html");
-
-            if (System.IO.File.Exists(filePath))
-            {
-                this.Url = $"file:///{filePath.Replace('\\', '/')}";
             }
         }
     }

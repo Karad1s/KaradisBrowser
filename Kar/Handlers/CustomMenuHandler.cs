@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Kar
+namespace Kar.Handlers
 {
     internal class CustomMenuHandler: IContextMenuHandler
     {

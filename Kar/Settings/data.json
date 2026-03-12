@@ -1,35 +1,41 @@
 {
-    "security":{
-        "title": "Безопасность",
-        "content": "настройки двухфакторной аутентификации..."
-    },
-    "passwords":{
-        "title": "Пароли",
-        "content": "настройки управления паролями..."
-    },
-    "appearance":{
-        "title": "Внешний вид",
-        "content": "настройки темы, шрифтов и других визуальных элементов..."
-    },
-    "SearchSystem":{
-        "title": "Система поиска",
-        "content":{
-            "id": "Search system",
-            "label": "Система поиска",
-            "choise": ["Google", "Bing", "DuckDuckGo","Yandex", "Yahoo", "Ask"],
-            "value": "Google"
-        }
-    },
-    "default":{
-        "title": "Браузер по умолчанию",
-        "content": {
-            "id": "Default browser",
-            "label": "Браузер по умолчанию"
-            
-        }
-    },
-    "language":{
-        "title": "Язык",
-        "content": "настройки языка интерфейса..."
+  "security":
+  {
+    "title": "Безопасность",
+    "content": "настройки двухфакторной аутентификации..."
+  },
+  "passwords":
+  {
+    "title": "Пароли",
+    "content": "настройки управления паролями..."
+  },
+  "appearance":
+  {
+    "title": "Внешний вид",
+    "content": "настройки темы, шрифтов и других визуальных элементов..."
+  },
+  "SearchSystem":
+  {
+    "title": "Система поиска",
+    "content": {
+      "id": "Search system",
+      "label": "Система поиска",
+      "choise": [ "Google", "Bing", "DuckDuckGo", "Yandex", "Yahoo", "Ask" ],
+      "value": "Google"
     }
+  },
+  "default":
+  {
+    "title": "Браузер по умолчанию",
+    "content": {
+      "id": "Default browser",
+      "label": "Браузер по умолчанию"
+
+    }
+  },
+  "language":
+  {
+    "title": "Язык",
+    "content": "настройки языка интерфейса..."
+  }
 }
