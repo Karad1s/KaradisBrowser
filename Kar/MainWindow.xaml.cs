@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using Kar.Handlers;
+using CefSharp.Fluent;
 
 namespace Kar
 {
@@ -19,7 +20,7 @@ namespace Kar
         private WindowStyle _prevWindowStyle;
         private ResizeMode _prevResizeMode;
         private readonly Dictionary<TabViewModel, ChromiumWebBrowser> _browserCache = new Dictionary<TabViewModel, ChromiumWebBrowser>();
-
+        
         public MainViewModel ViewModel { get; set; }
 
         public MainWindow()
@@ -240,12 +241,15 @@ namespace Kar
             if (!_browserCache.ContainsKey(selectedTab))
             {
                 var newBrowser = new ChromiumWebBrowser();
-                newBrowser = browser
-
+                var downloadHandler = new CustomDownloadHandler();
+                selectedTab.Browser = newBrowser;
+                downloadHandler.DownloadStateChanged += OnDownloadStateChanged;
                 newBrowser.MenuHandler = new CustomMenuHandler();
                 newBrowser.LifeSpanHandler = new CustomLifeSpanHandler();
                 newBrowser.RequestHandler = new CustomRequestHandler();
-                newBrowser.DownloadHandler = new CustomDownloadHandler();
+                newBrowser.DownloadHandler = downloadHandler;
+                
+
                 string SettingsPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Settings", "settings.json");
                 var settingsService = new Settings.FileSettingsService(SettingsPath);
                 var settingsBridge = new Settings.SettingsBridge(settingsService);
@@ -324,7 +328,54 @@ namespace Kar
                 }
             });
         }
-        
+
+        public void OpenPopupInWindow(string url)
+        {
+            var popupBrowser = new ChromiumWebBrowser(url);
+            
+            var popupWindow = new Window
+            {
+                Title = "Авторизация",
+                Content = popupBrowser,
+                Width = 600,
+                Height = 700,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                Owner = this
+            };
+
+            popupWindow.Closed += (s, e) =>
+            {
+                popupBrowser.Dispose();
+            };
+
+            popupWindow.Show();
+        }
+
+        private void OnDownloadStateChanged(object sender, DownloadItem e)
+        {
+            var downloads = ViewModel.RecentDownloads;
+
+            var existingItem = downloads.FirstOrDefault(d => d.Id == e.Id);
+
+            if(existingItem != null)
+            {
+                existingItem.Update(e);
+            }
+            else
+            {
+                var newItem = new DownloadItemModel
+                {
+                    Id = e.Id
+                };
+                newItem.Update(e);
+                downloads.Insert(0, newItem);
+
+                if (downloads.Count > 5)
+                {
+                    downloads.RemoveAt(downloads.Count - 1);
+                }
+            }
+        }
     }
 
     public class TabSelectionConverter : IMultiValueConverter
@@ -348,6 +399,7 @@ namespace Kar
 
         }
     }
+
 }
 
         

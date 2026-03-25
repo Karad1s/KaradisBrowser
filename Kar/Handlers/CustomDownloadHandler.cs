@@ -7,7 +7,7 @@ namespace Kar.Handlers
 {
     public class CustomDownloadHandler : IDownloadHandler
     {
-        public event EventHandler<DownloadItem> OnBeforeDownloadFired;
+        public event EventHandler<DownloadItem> DownloadStateChanged;
         public bool CanDownload(IWebBrowser chromiumWebBrowser, IBrowser browser, string url, string requestMethod)
         {
             return true;
@@ -24,9 +24,9 @@ namespace Kar.Handlers
 
        public void OnDownloadUpdated(IWebBrowser chromiumWebBrowser, IBrowser browser, DownloadItem downloadItem, IDownloadItemCallback callback)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                OnBeforeDownloadFired?.Invoke(this, downloadItem);
+                DownloadStateChanged?.Invoke(this, downloadItem);
             });
         }
     }

@@ -18,6 +18,8 @@ namespace Kar
         public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
         public CompositeCollection TabItems { get; set; }
 
+        public ObservableCollection<DownloadItemModel> RecentDownloads { get; set; } = new ObservableCollection<DownloadItemModel>();
+
         public TabViewModel SelectedTab
         {
             get => _selectedTab;
@@ -55,7 +57,10 @@ namespace Kar
         public ICommand HomeCommand { get; }
         public ICommand SettingsCommand { get; }
 
-        public ICommand Extentions { get; }
+        public ICommand ExtentionsCommand { get; }
+
+        public ICommand ShowAllDownloadsCommand { get; }
+        public ICommand OpenDownloadsFolderCommand { get; }
 
         public MainViewModel(MainWindow window)
         {
@@ -101,6 +106,26 @@ namespace Kar
                 AddNewTab(Url);
             });
 
+            ExtentionsCommand = new RelayCommand(obj =>
+            {
+                var Url = "https://chromewebstore.google.com/category/extensions";
+                AddNewTab(Url);
+            });
+
+            ShowAllDownloadsCommand = new RelayCommand(obj =>
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string downloadsPageUrl = $"file:///{Path.Combine(baseDir, "Library", "library.html").Replace('\\', '/')}";
+
+                AddNewTab(downloadsPageUrl);
+            });
+
+            OpenDownloadsFolderCommand = new RelayCommand(obj =>
+            {
+            string userDownloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            OpenFolderExplorer(userDownloadsPath);
+            });
+
             SearchSystems = new ObservableCollection<SearchSystem>
            {
                 new SearchSystem("Google","https://www.google.com/search?q="),
@@ -133,6 +158,38 @@ namespace Kar
 
             Tabs.Add(newTab);
             SelectedTab = newTab;
+        }
+
+        public void OpenFolderExplorer(string filePath)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(filePath)) return;
+
+                if(File.Exists(filePath))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"/select,\"{filePath}\"",
+                        UseShellExecute = true  
+                    });
+                }
+                else if (Directory.Exists(filePath))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"\"{filePath}\"",
+                        UseShellExecute = true
+                    });
+                }
+            }
+            catch (Exception ex) 
+            {
+                System.Diagnostics.Debug.WriteLine($"[Файловая система] Ошибка при открытии проводника: {ex.Message}");
+            }
+            
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

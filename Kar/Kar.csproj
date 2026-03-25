@@ -7,6 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <Platforms>AnyCPU;x64</Platforms>
+    <ApplicationIcon>Assets\Group 12.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,7 @@
     <None Remove="Assets\Icons\Collapse.svg" />
     <None Remove="Assets\Icons\DownloadButton.svg" />
     <None Remove="Assets\Icons\ExtensionsButton.svg" />
+    <None Remove="Assets\Icons\Folder.svg" />
     <None Remove="Assets\Icons\Home.svg" />
     <None Remove="Assets\Icons\Logo.svg" />
     <None Remove="Assets\Icons\MaxWindow.svg" />
@@ -37,6 +39,7 @@
   <ItemGroup>
     <Resource Include="Assets\Icons\DownloadButton.svg" />
     <Resource Include="Assets\Icons\ExtensionsButton.svg" />
+    <Content Include="Assets\Group 12.ico" />
     <Content Include="Homepage\home.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -66,6 +69,7 @@
     <Resource Include="Assets\Icons\ArrowF.svg" />
     <Resource Include="Assets\Icons\Close.svg" />
     <Resource Include="Assets\Icons\Collapse.svg" />
+    <Resource Include="Assets\Icons\Folder.svg" />
     <Resource Include="Assets\Icons\Home.svg" />
     <Resource Include="Assets\Icons\Logo.svg" />
     <Resource Include="Assets\Icons\MaxWindow.svg" />

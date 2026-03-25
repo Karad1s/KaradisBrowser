@@ -18,7 +18,6 @@ namespace Kar
             InitializeComponent();
 
             Browser.LifeSpanHandler = new CustomLifeSpanHandler();
-            
             this.DataContextChanged += (s, e) =>
             {
                 if (DataContext is TabViewModel viewModel)
