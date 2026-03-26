@@ -59,7 +59,6 @@ namespace Kar
                 x += childWidth;
             }
 
-            // Сажаем кнопку сразу после вкладок
             addBtn.Arrange(new Rect(x, (finalSize.Height - addBtn.DesiredSize.Height) / 2,
                                         addBtn.DesiredSize.Width, addBtn.DesiredSize.Height));
 

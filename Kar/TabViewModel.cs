@@ -38,6 +38,21 @@ namespace Kar
             set { _browser = value; OnPropertyChanged(); }
         }
 
+        private string _currentSearchEngine = "Google";
+
+        public string CurrentSearchEngine
+        {
+            get => _currentSearchEngine;
+            set
+            {
+                if(_currentSearchEngine != value)
+                {
+                    _currentSearchEngine = value;
+                    OnPropertyChanged(nameof(CurrentSearchEngine));
+                }
+            }
+        }
+
         public ICommand BackCommand { get; }
         public ICommand ForwardCommand { get; }
         public ICommand ReloadCommand { get; }

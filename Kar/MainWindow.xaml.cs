@@ -20,11 +20,18 @@ namespace Kar
         private WindowStyle _prevWindowStyle;
         private ResizeMode _prevResizeMode;
         private readonly Dictionary<TabViewModel, ChromiumWebBrowser> _browserCache = new Dictionary<TabViewModel, ChromiumWebBrowser>();
-        
+
         public MainViewModel ViewModel { get; set; }
 
         public MainWindow()
         {
+            InitializeComponent();
+
+            if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
+            {
+                return;
+            }
+
             ViewModel = new MainViewModel(this);
 
             ViewModel.Tabs.CollectionChanged += (s, e) =>
@@ -37,7 +44,7 @@ namespace Kar
                     }
                 }
             };
-            InitializeComponent();
+            
             this.DataContext = ViewModel;
             SetupTabManager();
             UpdBrowserUI();
@@ -62,7 +69,7 @@ namespace Kar
             }
         }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e) 
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Cef.Shutdown();
             Close();
@@ -128,7 +135,7 @@ namespace Kar
 
         private void SuggestionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(SuggestionList.SelectedItem is string selected)
+            if (SuggestionList.SelectedItem is string selected)
             {
                 UrlTextBox.Text = selected;
                 SuggestionPopup.IsOpen = false;
@@ -141,19 +148,12 @@ namespace Kar
         {
             if (string.IsNullOrWhiteSpace(query)) return;
 
-            if (!query.Contains(".") || query.Contains(" "))
+            if (ViewModel.SelectedTab != null)
             {
-                if (ViewModel.SelectedSearchSystem != null && ViewModel.SelectedTab != null)
-                {
-                    string searchUrl = ViewModel.SelectedSearchSystem.Url + Uri.EscapeDataString(query);
-                    ViewModel.SelectedTab.Url = searchUrl;
-                }
-            }
-            else
-            {
-                // Если это ссылка, просто обновляем Url во вкладке
-                if (ViewModel.SelectedTab != null)
-                    ViewModel.SelectedTab.Url = query.StartsWith("http") ? query : "http://" + query;
+                string currentSearchEngine = ViewModel.SelectedTab.CurrentSearchEngine ?? ViewModel.GlobalSearchEngine;
+                string finalUrl = ViewModel.FormatSearchQuery(query, currentSearchEngine);
+
+                ViewModel.SelectedTab.Url = finalUrl;
             }
         }
         private async void UrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -184,20 +184,17 @@ namespace Kar
         {
             if (e.Key == Key.Enter)
             {
-                var textBox = sender as TextBox;
-                string query = textBox.Text;
+                e.Handled = true;
+                string userInput = UrlTextBox.Text;
+                string currentTabEngine = ViewModel.SelectedTab?.CurrentSearchEngine ?? "Google";
+                MessageBox.Show($"Для вкладки выбран: '{currentTabEngine}'\nГлобально: '{ViewModel.GlobalSearchEngine}'");
 
-                // Проверяем, является ли ввод ссылкой
-                if (!query.Contains(".") || query.Contains(" "))
-                {
-                    // Если это не ссылка, выполняем поиск через выбранную систему
-                    if (ViewModel.SelectedSearchSystem != null && ViewModel.SelectedTab != null)
-                    {
-                        // Формируем полную ссылку: Базовый URL + запрос
-                        string searchUrl = ViewModel.SelectedSearchSystem.Url + Uri.EscapeDataString(query);
-                        ViewModel.SelectedTab.Url = searchUrl;
-                    }
-                }
+                string currentSearchEngine = ViewModel.SelectedTab?.CurrentSearchEngine ?? "Google";
+                string finalUrl = ViewModel.FormatSearchQuery(userInput, currentSearchEngine);
+
+                if (ViewModel.SelectedTab != null) ViewModel.SelectedTab.Url = finalUrl;
+
+                Keyboard.ClearFocus();
             }
         }
 
@@ -248,15 +245,15 @@ namespace Kar
                 newBrowser.LifeSpanHandler = new CustomLifeSpanHandler();
                 newBrowser.RequestHandler = new CustomRequestHandler();
                 newBrowser.DownloadHandler = downloadHandler;
-                
+
 
                 string SettingsPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Settings", "settings.json");
                 var settingsService = new Settings.FileSettingsService(SettingsPath);
                 var settingsBridge = new Settings.SettingsBridge(settingsService);
 
-                //newBrowser.JavascriptObjectRepository.Settings.LegacyBindingEnabled = true;
+                newBrowser.JavascriptObjectRepository.Settings.LegacyBindingEnabled = true;
                 newBrowser.JavascriptObjectRepository.Register("SettingsHandler", new SettingBridge(), options: BindingOptions.DefaultBinder);
-                newBrowser.JavascriptObjectRepository.Register("csharpSettingsBridge", settingsBridge, options: BindingOptions.DefaultBinder);
+                newBrowser.JavascriptObjectRepository.Register("csharpSettingsBridge", ViewModel.AppSettingsBridge, options: BindingOptions.DefaultBinder);
 
                 newBrowser.TitleChanged += (s, args) =>
                 {
@@ -293,7 +290,7 @@ namespace Kar
         private void DoDelCache(TabViewModel tab)
         {
 
-            if (tab ==null || !_browserCache.ContainsKey(tab)) return;
+            if (tab == null || !_browserCache.ContainsKey(tab)) return;
 
             var browser = _browserCache[tab];
             BindingOperations.ClearAllBindings(browser);
@@ -332,7 +329,7 @@ namespace Kar
         public void OpenPopupInWindow(string url)
         {
             var popupBrowser = new ChromiumWebBrowser(url);
-            
+
             var popupWindow = new Window
             {
                 Title = "Авторизация",
@@ -357,7 +354,7 @@ namespace Kar
 
             var existingItem = downloads.FirstOrDefault(d => d.Id == e.Id);
 
-            if(existingItem != null)
+            if (existingItem != null)
             {
                 existingItem.Update(e);
             }
@@ -376,30 +373,39 @@ namespace Kar
                 }
             }
         }
-    }
 
-    public class TabSelectionConverter : IMultiValueConverter
-    {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        private void RegisterSettingsBridge(ChromiumWebBrowser browser)
         {
-            if (values.Length < 2) return false;
-            return values[0] == values[1];
+            if (ViewModel?.AppSettingsBridge == null)
+            {
+                System.Diagnostics.Debug.WriteLine("[Мост JS] Oшибка: AppSettingsBridge равен null!");
+                return;
+            }
+
+            browser.JavascriptObjectRepository.Settings.LegacyBindingEnabled = true;
+
+            try
+            {
+                browser.JavascriptObjectRepository.Register("csharpSettingsBridge", ViewModel.AppSettingsBridge, options: BindingOptions.DefaultBinder);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Мост JS] Ошибка при регистрации csharpSettingsBridge: {ex.Message}");
+            }
         }
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+
+        
+
+        public class SettingBridge
         {
-            throw new NotImplementedException();
+            public void OpenSettings()
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true });
+
+            }
         }
+
     }
-
-    public class SettingBridge
-    {
-        public void OpenSettings()
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true });
-
-        }
-    }
-
 }
 
         

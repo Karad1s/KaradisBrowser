@@ -1,12 +1,13 @@
 ﻿using CefSharp;
+using Kar.Settings; 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
-using Kar.Settings; 
 
 namespace Kar
 {
@@ -15,6 +16,28 @@ namespace Kar
         private TabViewModel _selectedTab;
         private MainWindow mainWindow;
         private IWebBrowser? _browser;
+
+        public  SettingsBridge AppSettingsBridge { get;}
+
+        private string _globalSearchEngine = "Google";
+        public string GlobalSearchEngine
+        {
+            get => _globalSearchEngine = "Google";
+            private set
+            {
+                if (_globalSearchEngine != value)
+                {
+                    _globalSearchEngine = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public List<string> SearchSystems { get; } = new List<string>
+        {
+            "Google","Bing","DuckDuckGo","Yandex","Yahoo","Ask"
+        };
+
         public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
         public CompositeCollection TabItems { get; set; }
 
@@ -29,20 +52,7 @@ namespace Kar
                 OnPropertyChanged(nameof(SelectedTab));
             }
         }
-
-        public ObservableCollection<SearchSystem> SearchSystems { get; set; }
-
-        public SearchSystem _selectedSearchSystem;
-        public SearchSystem SelectedSearchSystem
-        {
-            get => _selectedSearchSystem;
-            set
-            {
-                _selectedSearchSystem = value;
-                OnPropertyChanged();
-            }
-        }
-
+        
         public IWebBrowser? Browser
         {
             get => _browser;
@@ -65,6 +75,19 @@ namespace Kar
         public MainViewModel(MainWindow window)
         {
             this.mainWindow = window;
+
+            string settingsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings");
+            if (!Directory.Exists(settingsDir)) Directory.CreateDirectory(settingsDir);
+
+
+            string settingsPath = Path.Combine(settingsDir, "Settings.json");
+            var fileService = new FileSettingsService(settingsPath);
+
+            AppSettingsBridge = new SettingsBridge(fileService);
+            AppSettingsBridge.OnSettingsSaved += HandleSettingsUpdate;
+
+            HandleSettingsUpdate(AppSettingsBridge.GetSettings());
+
             AddTabCommand = new RelayCommand(obj => AddNewTab(string.Empty));
             CloseTabCommand = new RelayCommand(obj =>
             {
@@ -126,17 +149,6 @@ namespace Kar
             OpenFolderExplorer(userDownloadsPath);
             });
 
-            SearchSystems = new ObservableCollection<SearchSystem>
-           {
-                new SearchSystem("Google","https://www.google.com/search?q="),
-                new SearchSystem("Bing","https://www.bing.com/search?q="),
-                new SearchSystem("DuckDuckGo","https://duckduckgo.com/?q="),
-                new SearchSystem("Yandex","https://www.yandex.com/search?text="),
-                new SearchSystem ("Yahoo","https://search.yahoo.com/search?p="),
-                new SearchSystem("Ask","https://www.ask.com/web?q="),
-
-           };
-            SelectedSearchSystem = SearchSystems[0];
 
             TabItems = new CompositeCollection();
             var cont = new CollectionContainer { Collection = Tabs };
@@ -145,10 +157,36 @@ namespace Kar
 
             AddNewTab(string.Empty);
         }
+        public string FormatSearchQuery(string userInpur, string localSearchEngine)
+        {
+            if(string.IsNullOrWhiteSpace(userInpur)) return string.Empty;
 
+            if(userInpur.Contains(".")&& userInpur.Contains(" "))
+            {
+                return userInpur.StartsWith("http")? userInpur : $"https://{userInpur}";
+            }
+
+            string encodedQuery = Uri.EscapeDataString(userInpur);
+
+            return localSearchEngine switch
+            {
+                "Google" => $"https://www.google.com/search?q={encodedQuery}",
+                "Bing" => $"https://www.bing.com/search?q={encodedQuery}",
+                "DuckDuckGo" => $"https://duckduckgo.com/?q={encodedQuery}",
+                "Yandex" => $"https://www.yandex.com/search?text={encodedQuery}",
+                "Yahoo" => $"https://search.yahoo.com/search?p={encodedQuery}",
+                "Ask" => $"https://www.ask.com/web?q={encodedQuery}",
+                _ => $"https://www.google.com/search?q={encodedQuery}"
+            };  
+        }
         public void AddNewTab(string url)
         {
-            var newTab = new TabViewModel { Title = "Новая вкладка", Url = url };
+            
+            string currentEngine = this.GlobalSearchEngine;
+            
+            string FinalUrl= FormatSearchQuery(url, currentEngine);
+
+            var newTab = new TabViewModel { Title = "Новая вкладка", Url = url , CurrentSearchEngine = currentEngine };          
 
             if (string.IsNullOrEmpty(url) || url == "about:home")
             {
@@ -192,6 +230,43 @@ namespace Kar
             
         }
 
+        private void HandleSettingsUpdate(string jsonContent)
+        {
+            try
+            {
+                using var JsonDoc = JsonDocument.Parse(jsonContent);
+                string? newEngine = null;
+
+                if (JsonDoc.RootElement.TryGetProperty("SearchSystem", out var searchSystem)){
+                    if (searchSystem.ValueKind == JsonValueKind.Object && searchSystem.TryGetProperty("content", out var content) &&
+                content.TryGetProperty("value", out var value)) newEngine = value.GetString();
+                    else if (searchSystem.ValueKind == JsonValueKind.String) newEngine = searchSystem.GetString();
+                    
+                }
+
+                if (!string.IsNullOrEmpty(newEngine))
+                {
+                    GlobalSearchEngine = newEngine;
+                    System.Diagnostics.Debug.WriteLine($"[Настройки] Обновлена поисковая система: {GlobalSearchEngine}");
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        foreach (var tab in Tabs)
+                        {
+                            tab.CurrentSearchEngine = GlobalSearchEngine;
+                        }
+                    });
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("Настройки сохранились, но C# не смог найти поле 'SearchSystem' в файле settings.json.", "Ошибка чтения JSON");
+                }
+            }
+            catch (JsonException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Настройки] Ошибка при обработке JSON: {ex.Message}");
+            }
+        }
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? Name = null)
         {
@@ -207,7 +282,6 @@ namespace Kar
                 });
             }
         }
-
     }
 
     public class AddTabButton

@@ -31,12 +31,31 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Width" Value="25"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#757575"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#828282"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
 
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#333333"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type TabControl}">
@@ -157,12 +176,12 @@
                                         <ColumnDefinition Width="*"/>   
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <Image Grid.Column="0" Source="{Binding Favicon}" Width="12" Height="12" Margin="10,0,5,0"  VerticalAlignment="Center"/>
+                                    <Image Grid.Column="0" Source="{Binding Favicon, TargetNullValue={x:Null}}" Width="12" Height="12" Margin="10,0,5,0"  VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="1" Text="{Binding Title}" 
                                                VerticalAlignment="Center" 
                                                Margin="10,0,5,0" 
                                                Foreground="White" TextTrimming="CharacterEllipsis"/>
-                                    <Button Grid.Column="2" Width="20" Height="20" Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" BorderBrush="Transparent" Margin="0,0,5,0" BorderThickness="0">
+                                    <Button Grid.Column="2" Width="20" Height="20" Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Style="{StaticResource ChromeButtonStyle}"  Margin="0,0,5,0">
                                         <Path Data="M0.366106 0.366133C0.854253 -0.121894 1.64577 -0.121968 2.13387 0.366133L5.66941 3.90167L9.20425 0.366823C9.69239 -0.121315 10.4839 -0.121315 10.972 0.366823C11.4598 0.854986 11.4601 1.64655 10.972 2.13459L7.43717 5.66943L10.972 9.20428C11.4601 9.69238 11.46 10.4839 10.972 10.972C10.4839 11.4602 9.69239 11.4602 9.20425 10.972L5.66941 7.4372L2.13387 10.9727C1.64584 11.4608 0.854268 11.4606 0.366106 10.9727C-0.122032 10.4846 -0.122032 9.69311 0.366106 9.20497L3.90164 5.66943L0.366106 2.1339C-0.122032 1.64576 -0.122032 0.854271 0.366106 0.366133Z" Fill="#B3B1B1"/>
 
                                     </Button>
@@ -172,7 +191,7 @@
 
                         <DataTemplate DataType = "{x:Type local:AddTabButton}">
                             <Border Width="20" Height="20" CornerRadius="12" Background="#666666" VerticalAlignment="Center" Margin="5,0" BorderThickness="0">
-                                <Button Background="Transparent" BorderThickness="0" Command="{Binding DataContext.AddTabCommand, RelativeSource={RelativeSource AncestorType=Window} }">
+                                <Button Style="{StaticResource ChromeButtonStyle}" Command="{Binding DataContext.AddTabCommand, RelativeSource={RelativeSource AncestorType=Window} }" Margin="-2,0,0,0">
                                     <Path Data="M4 0C4.36804 6.55429e-06 4.66674 0.298038 4.66699 0.666016V3.33301H7.33301C7.70121 3.33301 8 3.6318 8 4C7.99988 4.3681 7.70114 4.66602 7.33301 4.66602H4.66699V7.33301C4.66699 7.7012 4.36819 7.99999 4 8C3.6318 8 3.33301 7.70121 3.33301 7.33301V4.66602H0.666992C0.298865 4.66602 0.000115602 4.3681 0 4C0 3.6318 0.298793 3.33301 0.666992 3.33301H3.33301V0.666016C3.33326 0.298033 3.63196 -1.60876e-08 4 0Z" Fill="#B3B1B1"/>
                                 </Button>
                             </Border>
@@ -205,17 +224,17 @@
         <Grid Grid.Row="1" Background="#616161">
             <!-- Строка управления -->
             <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="0,5,0,0">
-                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.BackCommand}" Cursor="Hand" >
+                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.BackCommand}" Style="{StaticResource ChromeButtonStyle}" Cursor="Hand" >
                     <Path Data="M16.0588 8.36377C16.6111 8.36377 17.0588 7.91605 17.0588 7.36377C17.0588 6.81148 16.6111 6.36377 16.0588 6.36377V7.36377V8.36377ZM0.292909 6.65666C-0.0976162 7.04719 -0.0976162 7.68035 0.292909 8.07088L6.65687 14.4348C7.04739 14.8254 7.68056 14.8254 8.07108 14.4348C8.46161 14.0443 8.46161 13.4111 8.07108 13.0206L2.41423 7.36377L8.07108 1.70692C8.46161 1.31639 8.46161 0.683226 8.07108 0.292702C7.68056 -0.0978227 7.04739 -0.0978227 6.65687 0.292702L0.292909 6.65666ZM16.0588 7.36377V6.36377L1.00002 6.36377V7.36377V8.36377L16.0588 8.36377V7.36377Z" Fill="#D9D9D9"/>
                 </Button>
-                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.ForwardCommand}" Cursor="Hand">
+                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.ForwardCommand}" Style="{StaticResource ChromeButtonStyle}" Cursor="Hand">
                     <Path Data="M1 8.36377C0.447715 8.36377 0 7.91605 0 7.36377C0 6.81148 0.447715 6.36377 1 6.36377L1 7.36377L1 8.36377ZM16.7659 6.65666C17.1565 7.04719 17.1565 7.68035 16.7659 8.07088L10.402 14.4348C10.0114 14.8254 9.37828 14.8254 8.98775 14.4348C8.59723 14.0443 8.59723 13.4111 8.98775 13.0206L14.6446 7.36377L8.98775 1.70692C8.59723 1.31639 8.59723 0.683226 8.98775 0.292702C9.37828 -0.0978227 10.0114 -0.0978227 10.402 0.292702L16.7659 6.65666ZM1 7.36377L1 6.36377L16.0588 6.36377V7.36377V8.36377L1 8.36377L1 7.36377Z" Fill="#D9D9D9"/>
                 </Button>
-                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.ReloadCommand}" Cursor="Hand" >
+                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.ReloadCommand}" Style="{StaticResource ChromeButtonStyle}" Cursor="Hand" >
                     <Path Data="M15.4821 11.27C13.716 15.3623 8.96685 17.2479 4.87454 15.4819C0.782252 13.7157 -1.10346 8.96666 0.662732 4.87428C2.42897 0.78206 7.17807 -1.10366 11.2703 0.662473C12.9597 1.39165 14.2702 2.63146 15.1056 4.12056L15.3652 3.51892C15.5841 3.01204 16.1727 2.77844 16.6796 2.99703C17.1867 3.21586 17.4203 3.80438 17.2015 4.31143L15.9563 7.19676C15.7374 7.70374 15.1489 7.93747 14.6419 7.71865L11.7565 6.47339C11.2498 6.25442 11.016 5.6659 11.2346 5.159C11.4535 4.65217 12.0421 4.41861 12.549 4.63711L13.2789 4.9521C12.6478 3.89667 11.6925 3.02304 10.4778 2.49876C7.3997 1.17031 3.82756 2.58872 2.49902 5.66679C1.17052 8.745 2.58889 12.3171 5.66705 13.6456C8.74521 14.9739 12.3174 13.5557 13.6458 10.4775C13.8647 9.97058 14.4532 9.73683 14.9602 9.95565C15.4672 10.1745 15.7008 10.763 15.4821 11.27Z" Fill="#D9D9D9"/>
 
                 </Button>
-                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.HomeCommand}" Cursor="Hand" >
+                <Button Width="25" Height="25" Background="Transparent" BorderThickness="0" Command="{Binding SelectedTab.HomeCommand}" Style="{StaticResource ChromeButtonStyle}" Cursor="Hand" >
                     <Path Data="M13.0118 6.32745C13.1388 6.45314 13.0498 6.6696 12.8711 6.6696H12.3622C12.2517 6.6696 12.1622 6.75914 12.1622 6.8696V14.3466C12.1622 14.457 12.0726 14.5466 11.9622 14.5466H8.98621C8.87576 14.5466 8.78621 14.457 8.78621 14.3466V10.2456C8.78621 10.1351 8.69667 10.0456 8.58622 10.0456H4.48524C4.37478 10.0456 4.28524 10.1351 4.28524 10.2456V14.3466C4.28524 14.457 4.1957 14.5466 4.08524 14.5466H1.10926C0.998805 14.5466 0.909262 14.457 0.909262 14.3466V6.8696C0.909262 6.75914 0.819719 6.6696 0.709262 6.6696H0.200401C0.0217136 6.6696 -0.0672885 6.45312 0.0597248 6.32744L6.39553 0.0578379C6.47346 -0.0192831 6.59896 -0.0192788 6.67689 0.0578479L13.0118 6.32745Z" Fill="#D9D9D9"/>
                 </Button>
             </StackPanel>
@@ -237,8 +256,7 @@
                             Padding="8,0">
                         <ComboBox x:Name="ChangedSearchSystem" 
                       ItemsSource="{Binding SearchSystems}" 
-                      SelectedItem="{Binding SelectedSearchSystem}"
-                      DisplayMemberPath="Name"
+                      SelectedItem="{Binding SelectedTab.CurrentSearchEngine, Mode=TwoWay, UpdateSourceTrigger= PropertyChanged}"
                       Background="Transparent" 
                       BorderThickness="0" 
                       VerticalAlignment="Center"
@@ -296,11 +314,11 @@
                 </Grid>
             </Border>
             <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Width="140" Margin="0,5">
-                <Button Width="25" Height="25" BorderThickness="0" Background="Transparent" Cursor="Hand" Command="{Binding DataContext.SettingsCommand, RelativeSource={RelativeSource AncestorType=Window}}" >
+                <Button Width="25" Height="25" BorderThickness="0" Background="Transparent" Cursor="Hand" Style="{StaticResource ChromeButtonStyle}" Command="{Binding DataContext.SettingsCommand, RelativeSource={RelativeSource AncestorType=Window}}" >
                     <!-- Settings -->
                     <Path Data="M6.90153 1.2531C7.27905 -0.417668 9.65983 -0.417734 10.0373 1.2531C10.2819 2.33602 11.5243 2.85075 12.4631 2.25799C13.9114 1.34346 15.5945 3.02739 14.6798 4.47576C14.0876 5.4143 14.6022 6.65678 15.6847 6.90154C17.3556 7.27897 17.3556 9.65985 15.6847 10.0373C14.6022 10.2821 14.0873 11.5245 14.6798 12.4631C15.5945 13.9115 13.9114 15.5945 12.4631 14.6799C11.5245 14.0873 10.2821 14.6022 10.0373 15.6847C9.65984 17.3556 7.27896 17.3556 6.90153 15.6847C6.65677 14.6022 5.4143 14.0876 4.47575 14.6799C3.02739 15.5945 1.34347 13.9114 2.25797 12.4631C2.85074 11.5244 2.33601 10.2819 1.25309 10.0373C-0.417733 9.65984 -0.417662 7.27907 1.25309 6.90154C2.33591 6.65695 2.85048 5.41443 2.25797 4.47576C1.34335 3.02737 3.02736 1.34336 4.47575 2.25799C5.41442 2.85049 6.65694 2.33592 6.90153 1.2531ZM8.46989 3.93963C5.96793 3.93973 3.93972 5.96795 3.93962 8.4699C3.93988 10.9717 5.96803 13.0001 8.46989 13.0002C10.9716 12.9999 12.9999 10.9716 13.0002 8.4699C13.0001 5.96804 10.9717 3.93989 8.46989 3.93963Z" Fill="#D9D9D9"/>
                 </Button>
-                <Button Width="25" Height="25" BorderThickness="0" Background="Transparent" Cursor="Hand" Command="{Binding DataContext.ExtentionsCommand, RelativeSource={RelativeSource AncestorType=Window}}" >
+                <Button Width="25" Height="25" BorderThickness="0" Background="Transparent" Cursor="Hand" Style="{StaticResource ChromeButtonStyle}" Command="{Binding DataContext.ExtentionsCommand, RelativeSource={RelativeSource AncestorType=Window}}" >
                     <Path Fill="#D9D9D9">
                         <Path.Data>
                             <GeometryGroup>
@@ -309,7 +327,7 @@
                         </Path.Data>
                     </Path>
                 </Button>
-                <ToggleButton x:Name="BtnDownload" Width="25" Height="25" ToolTip="Загрузки" BorderThickness="0" Background="Transparent" Cursor="Hand">
+                <ToggleButton x:Name="BtnDownload" Width="25" Height="25" ToolTip="Загрузки" BorderThickness="0" Background="Transparent"  Cursor="Hand">
                     <Path Data="M9.5 15.9961C9.77614 15.9961 10 16.22 10 16.4961C10 16.7722 9.77614 16.9961 9.5 16.9961H0.5C0.223858 16.9961 0 16.7722 0 16.4961C0 16.22 0.223858 15.9961 0.5 15.9961H9.5ZM5 0C5.27607 0 5.49989 0.223952 5.5 0.5V11.9824L7.82812 9.65332C8.02325 9.45831 8.33989 9.45854 8.53516 9.65332C8.73038 9.84855 8.73031 10.1651 8.53516 10.3604L5.35352 13.543C5.15829 13.738 4.84171 13.738 4.64648 13.543L1.46484 10.3604C1.26969 10.1651 1.26962 9.84855 1.46484 9.65332C1.66011 9.45854 1.97675 9.45831 2.17188 9.65332L4.5 11.9824V0.5C4.50011 0.223952 4.72393 0 5 0Z" Fill="#D9D9D9"/>
                 </ToggleButton>
 

@@ -25,10 +25,26 @@ namespace Kar.Settings
     {
         private readonly ISettingsService _settingsService;
 
+        public event Action<string> OnSettingsSaved;
+
         public SettingsBridge(ISettingsService settingsService) => _settingsService = settingsService;
 
         public string GetSettings() => _settingsService.LoadSettings();
-        public void SaveSettings(string settings) => _settingsService.SaveSettings(settings);
+        public bool SaveSettings(string settings)
+        {
+            System.Windows.MessageBox.Show("C# успешно получил данные из JavaScript!", "Диагностика моста");
+            try
+            {
+                _settingsService.SaveSettings(settings);
+                OnSettingsSaved?.Invoke(settings);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving settings: {ex.Message}");
+                return false;
+            }
+        }
     }
 
 

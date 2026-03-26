@@ -89,6 +89,25 @@ function renderSingleSetting(item) {
         <label for="${item.id}">${item.label}</label>
         ${inputHtml}
     `;
+
+    container.addEventListener('change', async (e) => {
+        if (e.target.type === 'change') {
+            item.value = e.target.checked;
+        } else {
+            item.value = e.target.value;
+        }
+
+        try {
+            const isSaved = await csharpSettingsBridge.saveSettings(JSON.stringify(settingsData));
+            if (isSaved) {
+                alert('Настройки успешно сохранены! Выбран:' + item.value);
+            } else {
+                alert("ОШИБКА: C# вернул false. Файл заблокирован или путь неверный. Загляни в 'Вывод' Visual Studio.");
+            }
+        } catch (error) {
+            alert("СИСТЕМНАЯ ОШИБКА JS: " + (error.message || JSON.stringify(error)));
+        }
+    });
     return container;
 }
 async function SaveSettings() {
