@@ -16,9 +16,9 @@ namespace Kar.Handlers
 
                 if (!url.Contains("google.com/search") && !url.Contains("duckduckgo.com/?q="))
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        var mainWindow = Application.Current.MainWindow as MainWindow;
+                        var mainWindow = System.Windows.Application.Current.MainWindow as MainWindow;
                         if (mainWindow != null)
                         {
                             mainWindow.ViewModel.AddNewTab(request.Url);

@@ -24,7 +24,7 @@ namespace Kar.Handlers
 
        public void OnDownloadUpdated(IWebBrowser chromiumWebBrowser, IBrowser browser, DownloadItem downloadItem, IDownloadItemCallback callback)
         {
-            Application.Current.Dispatcher.InvokeAsync(() =>
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 DownloadStateChanged?.Invoke(this, downloadItem);
             });

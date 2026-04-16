@@ -4,15 +4,15 @@ using System.Windows;
 using System.Windows.Controls;  
 namespace Kar
 {
-    public class TabPanel: Panel
+    public class TabPanel: System.Windows.Controls.Panel
     {
         private const double MaxTabWidth = 150;
         private const double MinTabWidth = 40.0;
-        protected override Size MeasureOverride(Size availableSize)
+        protected override System.Windows.Size MeasureOverride(System.Windows.Size availableSize)
         {
             double maxHeight = 0;
 
-            if (InternalChildren.Count == 0) return new Size(0, 0);
+            if (InternalChildren.Count == 0) return new System.Windows.Size(0, 0);
 
             UIElement addBtn = InternalChildren[InternalChildren.Count - 1];
             addBtn.Measure(availableSize);
@@ -28,13 +28,13 @@ namespace Kar
 
             for (int i = 0; i < tabCount; i++)
             {
-                InternalChildren[i].Measure(new Size(childWidth, availableSize.Height));
+                InternalChildren[i].Measure(new System.Windows.Size(childWidth, availableSize.Height));
                 maxHeight = Math.Max(maxHeight, InternalChildren[i].DesiredSize.Height);
             }
-            return new Size(availableSize.Width, maxHeight);
+            return new System.Windows.Size(availableSize.Width, maxHeight);
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
+        protected override System.Windows.Size ArrangeOverride(System.Windows.Size finalSize)
         {
             if(InternalChildren.Count == 0) return finalSize;
 

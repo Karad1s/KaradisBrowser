@@ -9,7 +9,7 @@ namespace Kar.Handlers
         {
             get
             {
-                var mainWindow = Application.Current.MainWindow as MainWindow;
+                var mainWindow = System.Windows.Application.Current.MainWindow as MainWindow;
                 return mainWindow.ViewModel;
             }
         }
@@ -20,9 +20,9 @@ namespace Kar.Handlers
         {
             newBrowser = null;
 
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                if (Application.Current.MainWindow is MainWindow mainWindow)
+                if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
                 {
                     if (IsAuthUrl(targetUrl))
                     {

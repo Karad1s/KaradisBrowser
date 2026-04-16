@@ -11,7 +11,7 @@ namespace Kar
     /// <summary>
     /// Логика взаимодействия для TabContent.xaml
     /// </summary>
-    public partial class TabContent : UserControl
+    public partial class TabContent : System.Windows.Controls.UserControl
     {
         public TabContent()
         {

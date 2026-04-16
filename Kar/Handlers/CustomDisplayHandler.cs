@@ -1,4 +1,4 @@
-﻿using System.Windows;
+﻿using WPF = System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using CefSharp;
@@ -19,14 +19,10 @@ namespace Kar.Handlers
 
         public void OnFullscreenModeChange(IWebBrowser chromiumWebBrowser, IBrowser browser, bool fullscreen)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            WPF.Application.Current.Dispatcher.Invoke(() =>
             {
-
-                var mainWin = Application.Current.MainWindow as MainWindow;
-                if (mainWin != null)
-                {
-                    mainWin.SetFullScreen(fullscreen);
-                }
+                var mainWin = WPF.Application.Current.MainWindow as MainWindow;
+                mainWin?.Dispatcher.Invoke(() => mainWin.ToggleFullScreen(fullscreen));
             });
         }
 

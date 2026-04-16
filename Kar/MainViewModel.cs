@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Windows;
+using WPF = System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 
@@ -249,7 +249,7 @@ namespace Kar
                     GlobalSearchEngine = newEngine;
                     System.Diagnostics.Debug.WriteLine($"[Настройки] Обновлена поисковая система: {GlobalSearchEngine}");
 
-                    Application.Current.Dispatcher.Invoke(() =>
+                    WPF.Application.Current.Dispatcher.Invoke(() =>
                     {
                         foreach (var tab in Tabs)
                         {
@@ -259,7 +259,7 @@ namespace Kar
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show("Настройки сохранились, но C# не смог найти поле 'SearchSystem' в файле settings.json.", "Ошибка чтения JSON");
+                    WPF.MessageBox.Show("Настройки сохранились, но C# не смог найти поле 'SearchSystem' в файле settings.json.", "Ошибка чтения JSON");
                 }
             }
             catch (JsonException ex)
@@ -270,13 +270,13 @@ namespace Kar
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? Name = null)
         {
-            if (Application.Current.Dispatcher.CheckAccess())
+            if (WPF.Application.Current.Dispatcher.CheckAccess())
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
             }
             else
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                WPF.Application.Current.Dispatcher.Invoke(() =>
                 {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
                 });
