@@ -54,7 +54,7 @@ namespace Kar
                 this.MaxHeight = screen.WorkingArea.Height;
                 this.MaxWidth = screen.WorkingArea.Width;
             };
-            
+
             this.DataContext = ViewModel;
             SetupTabManager();
             UpdBrowserUI();
@@ -63,7 +63,7 @@ namespace Kar
 
         private void MainWindow_StateChanged(object sender, EventArgs e)
         {
-            if(this.WindowState == WindowState.Maximized)
+            if (this.WindowState == WindowState.Maximized)
             {
                 this.BorderThickness = new Thickness(8);
             }
@@ -75,8 +75,17 @@ namespace Kar
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            Cef.Shutdown();
             Close();
+        }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.SaveCurrentSession();
+            }
+            Cef.Shutdown();
+            base.OnClosed(e);
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e) => this.WindowState = WindowState.Minimized;
@@ -123,7 +132,8 @@ namespace Kar
                     TopRow.Height = new GridLength(0);
                     PanelControl.Height = new GridLength(0);
                 }
-                else {
+                else
+                {
 
                     if (_prevWindowState == WindowState.Normal)
                     {
@@ -417,7 +427,7 @@ namespace Kar
             }
         }
 
-        
+
 
         public class SettingBridge
         {
@@ -428,7 +438,11 @@ namespace Kar
             }
         }
 
-    }
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+        }
+    } 
 }
 
         

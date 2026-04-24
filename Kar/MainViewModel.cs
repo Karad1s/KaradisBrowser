@@ -16,6 +16,8 @@ namespace Kar
         private TabViewModel _selectedTab;
         private MainWindow mainWindow;
         private IWebBrowser? _browser;
+        
+        private readonly SessionManager _sessionManager = new SessionManager();
 
         public  SettingsBridge AppSettingsBridge { get;}
 
@@ -61,10 +63,6 @@ namespace Kar
         public ICommand AddTabCommand { get; }
         public ICommand CloseTabCommand { get; }
         public ICommand SelectedTabCommand { get; }
-        public ICommand BackCommand { get; }
-        public ICommand ForwardCommand { get; }
-        public ICommand ReloadCommand { get; }
-        public ICommand HomeCommand { get; }
         public ICommand SettingsCommand { get; }
 
         public ICommand ExtentionsCommand { get; }
@@ -155,7 +153,18 @@ namespace Kar
             TabItems.Add(cont);
             TabItems.Add(new AddTabButton());
 
-            AddNewTab(string.Empty);
+            var SavedTabs = _sessionManager.LoadSession();
+            if (SavedTabs != null && SavedTabs.Any())
+            {
+                foreach(var tab in SavedTabs)
+                {
+                    RestoreTab(tab);
+                }
+            }
+            else
+            {
+                AddNewTab(string.Empty);
+            }
         }
         public string FormatSearchQuery(string userInpur, string localSearchEngine)
         {
@@ -198,6 +207,40 @@ namespace Kar
             SelectedTab = newTab;
         }
 
+        public void RestoreTab(TabSessionDto dto)
+        {
+            var newTab = new TabViewModel
+            {
+                Title = dto.Title,
+                Url = (string.IsNullOrEmpty(dto.Url) || dto.Url== "Empty URL") ? "Kar/Homepage/home.html" : dto.Url,
+                NavigationHistory = dto.NavigationHistory ?? new List<string>(), 
+                CurrentHistoryIndex = dto.CurrentHistoryIndex,
+            };
+            Tabs.Add(newTab);
+            SelectedTab = newTab;
+        }
+
+        public void SaveCurrentSession()
+        { try
+            { 
+            if (Tabs == null || Tabs.Count == 0)
+            {
+                System.Windows.MessageBox.Show("Отладка: Коллекция вкладок пуста, сохранять нечего.", "Session Debug");
+                return;
+            }
+
+            string path = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Settings", "session.yaml");
+            System.Windows.MessageBox.Show($"Отладка: Успешно!\nФайл должен быть здесь:\n{path}", "Session Debug");
+
+           
+                _sessionManager.SaveSession(Tabs, false);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Сессия] Ошибка при сохранении сессии: {ex.Message}");
+                System.Windows.MessageBox.Show($"Критическая ошибка сохранения:\n{ex.Message}\n\n{ex.StackTrace}", "Session Error");
+            }
+        }
         public void OpenFolderExplorer(string filePath)
         {
             try

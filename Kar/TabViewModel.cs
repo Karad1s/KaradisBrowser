@@ -14,6 +14,10 @@ namespace Kar
         private string? _favicon;
         private IWebBrowser? _browser;
 
+        public bool isIncognito { get; set; } = false;
+        public List<string> NavigationHistory { get; set; } = new List<string>();
+        public int CurrentHistoryIndex { get; set; } = -1;
+
         public string? Title
         { 
             get => _title;
@@ -84,6 +88,24 @@ namespace Kar
                 if (System.IO.File.Exists(filePath))
                 {
                     this.Url = $"file:///{filePath.Replace('\\', '/')}";
+                }
+            });
+        }
+
+        private void OnBrowserAddresChanged(object sender, AddressChangedEventArgs e)
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                string NewUrl = e.Address;
+
+                if(CurrentHistoryIndex == -1 || NavigationHistory[CurrentHistoryIndex] != NewUrl)
+                {
+                    if(CurrentHistoryIndex < NavigationHistory.Count - 1)
+                    {
+                        NavigationHistory.RemoveRange(CurrentHistoryIndex + 1, NavigationHistory.Count - CurrentHistoryIndex - 1);
+                    }
+                    NavigationHistory.Add(NewUrl);
+                    CurrentHistoryIndex++;
                 }
             });
         }
