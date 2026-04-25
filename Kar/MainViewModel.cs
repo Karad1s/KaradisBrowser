@@ -86,7 +86,11 @@ namespace Kar
 
             HandleSettingsUpdate(AppSettingsBridge.GetSettings());
 
-            AddTabCommand = new RelayCommand(obj => AddNewTab(string.Empty));
+            AddTabCommand = new RelayCommand(obj =>
+            {
+                AddNewTab(string.Empty);
+                System.Diagnostics.Debug.WriteLine("[WPF Command] Вызвано создание новой вкладки!");
+            });
             CloseTabCommand = new RelayCommand(obj =>
             {
                 if (obj is TabViewModel tab)
@@ -225,12 +229,12 @@ namespace Kar
             { 
             if (Tabs == null || Tabs.Count == 0)
             {
-                System.Windows.MessageBox.Show("Отладка: Коллекция вкладок пуста, сохранять нечего.", "Session Debug");
+                //System.Windows.MessageBox.Show("Отладка: Коллекция вкладок пуста, сохранять нечего.", "Session Debug");
                 return;
             }
 
             string path = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Settings", "session.yaml");
-            System.Windows.MessageBox.Show($"Отладка: Успешно!\nФайл должен быть здесь:\n{path}", "Session Debug");
+            //System.Windows.MessageBox.Show($"Отладка: Успешно!\nФайл должен быть здесь:\n{path}", "Session Debug");
 
            
                 _sessionManager.SaveSession(Tabs, false);
@@ -238,7 +242,7 @@ namespace Kar
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Сессия] Ошибка при сохранении сессии: {ex.Message}");
-                System.Windows.MessageBox.Show($"Критическая ошибка сохранения:\n{ex.Message}\n\n{ex.StackTrace}", "Session Error");
+                //System.Windows.MessageBox.Show($"Критическая ошибка сохранения:\n{ex.Message}\n\n{ex.StackTrace}", "Session Error");
             }
         }
         public void OpenFolderExplorer(string filePath)

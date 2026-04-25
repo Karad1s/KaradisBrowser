@@ -55,6 +55,8 @@ namespace Kar
                 this.MaxWidth = screen.WorkingArea.Width;
             };
 
+            ApplyShortcuts();
+
             this.DataContext = ViewModel;
             SetupTabManager();
             UpdBrowserUI();
@@ -277,6 +279,7 @@ namespace Kar
                 newBrowser.MenuHandler = new CustomMenuHandler();
                 newBrowser.LifeSpanHandler = new CustomLifeSpanHandler();
                 newBrowser.RequestHandler = new CustomRequestHandler();
+                newBrowser.KeyboardHandler = new CustomKeyboardHandler(this);
                 newBrowser.DownloadHandler = downloadHandler;
 
 
@@ -357,6 +360,65 @@ namespace Kar
                     browser.ShowDevTools(windowInfo);
                 }
             });
+        }
+
+        public void ApplyShortcuts()
+        {
+            var shortcuts = Shortcut.ShortcutLoader.LoadShortcut();
+            System.Diagnostics.Debug.WriteLine($"[YAML] Загружено шорткатов из файла: {shortcuts.Count}");
+            var gestureConverter = new KeyGestureConverter();
+            byte addedBindingsCount = 0;
+
+            foreach (var shortcut in shortcuts)
+            {
+                try
+                {
+                    if (gestureConverter.ConvertFromString(shortcut.Gesture) is KeyGesture keyGesture)
+                    {
+                        ICommand? targetCommand = null;
+
+                        switch (shortcut.Action)
+                        {
+                            case "NewTab":
+                                targetCommand = ViewModel.AddTabCommand;
+
+                                break;
+                            case "CloseTab":
+                                targetCommand = ViewModel.CloseTabCommand;
+                                break;
+                            case "OpenSettings":
+                                targetCommand = ViewModel.SettingsCommand;
+                                break;
+                            case "ToggleFullScreen":
+                                targetCommand = new RelayCommand(_ => {
+                                    ToggleFullScreen(this.WindowState != WindowState.Maximized);
+                                    System.Diagnostics.Debug.WriteLine("[WPF Command] Вызвано открытие в полном окне");
+                                });
+                                break;
+                            case "ShowDevTools":
+                                targetCommand = new RelayCommand(_ => ShowDevTools());
+                                break;
+                        }
+
+                        if (targetCommand != null)
+                        {
+                            this.InputBindings.Add(new KeyBinding(targetCommand, keyGesture));
+                            addedBindingsCount++;
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[YAML] Действие '{shortcut.Action}' не распознано в switch.");
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Ошибка при применении горячей клавиши '{shortcut.Gesture}' для действия '{shortcut.Action}': {ex.Message}");
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[WPF] Успешно привязано горячих клавиш к окну: {addedBindingsCount}");
+            }
         }
 
         public void OpenPopupInWindow(string url)

@@ -4,7 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Kar
+namespace Kar.Settings
 {
     public class TabSessionDto
     {
@@ -36,7 +36,7 @@ namespace Kar
                 CurrentHistoryIndex = t.CurrentHistoryIndex
             }).ToList();
 
-            System.Windows.MessageBox.Show($"Отладка SessionManager: Вкладок подготовлено: {dtos.Count}", "Session Debug");
+            //System.Windows.MessageBox.Show($"Отладка SessionManager: Вкладок подготовлено: {dtos.Count}", "Session Debug");
 
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
