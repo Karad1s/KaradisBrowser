@@ -1,0 +1,50 @@
+﻿body{
+    background-color: #242424;
+    color: #ffffff;
+}
+
+.Logo_aria{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+.del{
+    background-color: #4D0000;
+    color: #ffffff;
+    border: none;
+    border-radius: 30px;
+    width: 217px;
+    height: 52px;
+}
+
+.del-btn{
+    background-color: #4D0000;
+    color: #ffffff;
+    border: none;
+    border-radius: 30px;
+    width: 217px;
+    height: 52px;
+}
+
+.del-btn:hover{
+    background-color: #521202;
+    color: #ffffff;
+    border: none;
+    border-radius: 30px;
+    width: 217px;
+    height: 52px;
+    cursor: pointer;
+}
+
+main{
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    
+}
+
+
+.history_item:nth-child(even){
+    background-color: #353434;
+}

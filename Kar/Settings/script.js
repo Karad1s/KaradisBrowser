@@ -100,12 +100,12 @@ function renderSingleSetting(item) {
         try {
             const isSaved = await csharpSettingsBridge.saveSettings(JSON.stringify(settingsData));
             if (isSaved) {
-                alert('Настройки успешно сохранены! Выбран:' + item.value);
+                Console.log('Настройки успешно сохранены! Выбран:' + item.value);
             } else {
-                alert("ОШИБКА: C# вернул false. Файл заблокирован или путь неверный. Загляни в 'Вывод' Visual Studio.");
+                Console.error("ОШИБКА: C# вернул false. Файл заблокирован или путь неверный. Загляни в 'Вывод' Visual Studio.");
             }
         } catch (error) {
-            alert("СИСТЕМНАЯ ОШИБКА JS: " + (error.message || JSON.stringify(error)));
+            Console.error("СИСТЕМНАЯ ОШИБКА JS: " + (error.message || JSON.stringify(error)));
         }
     });
     return container;

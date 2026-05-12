@@ -6,6 +6,8 @@
   gesture: "Ctrl+Shift+S"
 - action: "OpenHistory"
   gesture: "Ctrl+H"
+- action: "OpenDownload"
+  gesture: "Ctrl+j"
 - action: "ToggleFullScreen"
   gesture: "F11"
 - action: "ShowDevTool"

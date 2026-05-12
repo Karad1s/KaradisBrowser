@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Kar.Handlers;
+using Kar.HistoryPage;
 
 
 
@@ -16,6 +17,8 @@ namespace Kar
         public TabContent()
         {
             InitializeComponent();
+            
+            Browser.JavascriptObjectRepository.Register("historyBridge", new HistoryBridge(), options: BindingOptions.DefaultBinder);
 
             Browser.LifeSpanHandler = new CustomLifeSpanHandler();
             this.DataContextChanged += (s, e) =>
@@ -67,5 +70,21 @@ namespace Kar
             };
         }
 
+        private async void Browser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
+        {
+            if (!e.Frame.IsMain) return;
+
+            if (e.Url.StartsWith("devtols://") || string.IsNullOrEmpty(e.Url)) return;
+
+            var currentBrowser = (CefSharp.Wpf.ChromiumWebBrowser)sender;
+
+            string title = currentBrowser.Title;
+            string url = e.Url;
+
+            if(App.HistoryRepo != null)
+            {
+                await App.HistoryRepo.SaveQueryAsync(title, url); 
+            }
+        }
     }
 }
