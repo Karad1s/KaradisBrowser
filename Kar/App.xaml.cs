@@ -1,10 +1,7 @@
 ﻿using CefSharp;
 using CefSharp.Wpf;
-using System.Configuration;
-using System.Data;
+using Kar.HistoryPage;
 using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Media;
 
 namespace Kar
 {
@@ -13,7 +10,9 @@ namespace Kar
     /// </summary>
     public partial class App : System.Windows.Application
     {
-        protected override void OnStartup(StartupEventArgs e)
+
+        public static ISearchHistoryRepository HistoryRepo { get; private set; }
+        protected override async void OnStartup(StartupEventArgs e)
         {
            base.OnStartup(e);
             CefSettings settings = new CefSettings();
@@ -25,6 +24,11 @@ namespace Kar
             settings.SetOffScreenRenderingBestPerformanceArgs();
             settings.CefCommandLineArgs.Add("enable-webgl", "1");
             Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
+
+            SQLitePCL.Batteries.Init();
+
+            HistoryRepo = new SqliteSearchHistoryRepository("history.db");
+            await HistoryRepo.InitializeAsync();
         }
         protected override void OnExit(ExitEventArgs e)
         {

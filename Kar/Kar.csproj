@@ -12,20 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\Icons\AddNewTab.svg" />
-    <None Remove="Assets\Icons\ArrowB.svg" />
-    <None Remove="Assets\Icons\ArrowF.svg" />
-    <None Remove="Assets\Icons\Close.svg" />
-    <None Remove="Assets\Icons\Collapse.svg" />
-    <None Remove="Assets\Icons\DownloadButton.svg" />
-    <None Remove="Assets\Icons\ExtensionsButton.svg" />
-    <None Remove="Assets\Icons\Folder.svg" />
-    <None Remove="Assets\Icons\Home.svg" />
-    <None Remove="Assets\Icons\Logo.svg" />
-    <None Remove="Assets\Icons\MaxWindow.svg" />
-    <None Remove="Assets\Icons\Reload.svg" />
-    <None Remove="Assets\Icons\SearchIcon.svg" />
-    <None Remove="Assets\Icons\SettingsButton.svg" />
+    <None Remove="HistoryPage\history.html" />
+    <None Remove="HistoryPage\script.js" />
+    <None Remove="HistoryPage\style.css" />
     <None Remove="Settings\data.json" />
     <None Remove="Settings\script.js" />
     <None Remove="Settings\Settings.html" />
@@ -34,6 +23,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="HistoryPage\history.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="HistoryPage\script.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="HistoryPage\style.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Shortcut\shortcut.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -41,12 +39,12 @@
 
   <ItemGroup>
     <PackageReference Include="CefSharp.Wpf.NETCore" Version="146.0.100" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.7" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
     <PackageReference Include="YamlDotNet" Version="17.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\Icons\DownloadButton.svg" />
-    <Resource Include="Assets\Icons\ExtensionsButton.svg" />
     <Content Include="Assets\Group 12.ico" />
     <Content Include="Homepage\home.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -69,21 +67,6 @@
     <Content Include="Settings\style.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Assets\Icons\AddNewTab.svg" />
-    <Resource Include="Assets\Icons\ArrowB.svg" />
-    <Resource Include="Assets\Icons\ArrowF.svg" />
-    <Resource Include="Assets\Icons\Close.svg" />
-    <Resource Include="Assets\Icons\Collapse.svg" />
-    <Resource Include="Assets\Icons\Folder.svg" />
-    <Resource Include="Assets\Icons\Home.svg" />
-    <Resource Include="Assets\Icons\Logo.svg" />
-    <Resource Include="Assets\Icons\MaxWindow.svg" />
-    <Resource Include="Assets\Icons\Reload.svg" />
-    <Resource Include="Assets\Icons\SearchIcon.svg" />
-    <Resource Include="Assets\Icons\SettingsButton.svg" />
   </ItemGroup>
 
   <ItemGroup>

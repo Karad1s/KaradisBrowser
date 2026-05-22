@@ -64,6 +64,7 @@ namespace Kar
         public ICommand CloseTabCommand { get; }
         public ICommand SelectedTabCommand { get; }
         public ICommand SettingsCommand { get; }
+        public ICommand HistoryCommand { get; }
 
         public ICommand ExtentionsCommand { get; }
 
@@ -128,6 +129,12 @@ namespace Kar
             SettingsCommand = new RelayCommand(obj =>
             {
                 var Url = $"file:///{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings", "settings.html").Replace('\\', '/')}";
+                AddNewTab(Url);
+            });
+
+            HistoryCommand = new RelayCommand(obj =>
+            {
+                var Url = $"file:///{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HistoryPage", "history.html").Replace('\\', '/')}";
                 AddNewTab(Url);
             });
 

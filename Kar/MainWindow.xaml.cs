@@ -389,6 +389,9 @@ namespace Kar
                             case "OpenSettings":
                                 targetCommand = ViewModel.SettingsCommand;
                                 break;
+                            case "OpenHistory":
+                                targetCommand = ViewModel.HistoryCommand;
+                                break;
                             case "ToggleFullScreen":
                                 targetCommand = new RelayCommand(_ => {
                                     ToggleFullScreen(this.WindowState != WindowState.Maximized);

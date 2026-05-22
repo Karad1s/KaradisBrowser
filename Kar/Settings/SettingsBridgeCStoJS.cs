@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-
 namespace Kar.Settings
 {
     public interface ISettingsService
@@ -11,7 +10,7 @@ namespace Kar.Settings
         void SaveSettings(string settings);
     }
 
-    public class FileSettingsService: ISettingsService 
+    public class FileSettingsService : ISettingsService
     {
         private readonly string _filePath;
 
@@ -46,7 +45,4 @@ namespace Kar.Settings
             }
         }
     }
-
-
-
 }
