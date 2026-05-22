@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Security.Policy;
@@ -7,6 +7,13 @@ using System.Xml;
 
 namespace Kar.HistoryPage
 {
+    public class HistoryItemDto
+    {
+        public string url { get; set; } = string.Empty;
+        public string title { get; set; } = string.Empty;
+        public string VisitTime { get; set; } = string.Empty;
+    }
+
     public interface ISearchHistoryRepository
     {
         Task InitializeAsync();
@@ -14,6 +21,10 @@ namespace Kar.HistoryPage
         Task SaveQueryAsync(string url, string title);
 
         Task ClearAsync();
+
+        Task<List<HistoryItemDto>> GetHistoryAsync();
+
+        Task DeleteItemAsync(string url);
     }
 
     public class SqliteSearchHistoryRepository : ISearchHistoryRepository
@@ -75,5 +86,39 @@ namespace Kar.HistoryPage
             await cmd.ExecuteNonQueryAsync();
         }
 
+        public async Task<List<HistoryItemDto>> GetHistoryAsync()
+        {
+            var list = new List<HistoryItemDto>();
+            using var conn = new SqliteConnection(_connectionString);
+            await conn.OpenAsync();
+
+            string query = "SELECT Url, Title, VisitTimeUtc FROM SearchHistory ORDER BY VisitTimeUtc DESC";
+            using var cmd = new SqliteCommand(query, conn);
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new HistoryItemDto
+                {
+                    url = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
+                    title = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    VisitTime = reader.IsDBNull(2) ? string.Empty : reader.GetString(2)
+                });
+            }
+
+            return list;
+        }
+
+        public async Task DeleteItemAsync(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return;
+
+            using var conn = new SqliteConnection(_connectionString);
+            await conn.OpenAsync();
+
+            using var cmd = new SqliteCommand("DELETE FROM SearchHistory WHERE Url = @url", conn);
+            cmd.Parameters.AddWithValue("@url", url);
+            await cmd.ExecuteNonQueryAsync();
+        }
     }
 }
