@@ -1,4 +1,4 @@
-﻿using CefSharp;
+using CefSharp;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -83,7 +83,7 @@ namespace Kar
 
             if(App.HistoryRepo != null)
             {
-                await App.HistoryRepo.SaveQueryAsync(title, url); 
+                await App.HistoryRepo.SaveQueryAsync(url, title); 
             }
         }
     }

@@ -1,11 +1,12 @@
 ﻿using CefSharp;
 using CefSharp.Wpf;
+using Kar;
+using Kar.Handlers;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using Kar.Handlers;
 using WPF = System.Windows;
 
 namespace Kar
@@ -156,10 +157,10 @@ namespace Kar
             });
         }
 
-        private void ChangedSearchSystem_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ChangedSearchSystem.SelectedItem is "Google") { }
-        }
+        //private void ChangedSearchSystem_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    if (ChangedSearchSystem.SelectedItem is "Google") { }
+        //}
 
         private void SuggestionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -507,10 +508,5 @@ namespace Kar
         {
 
         }
-    } 
+    }
 }
-
-        
-    
-
-       
