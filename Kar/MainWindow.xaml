@@ -135,13 +135,13 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" x:Name="TopBar" >
+        <Grid Grid.Row="0" x:Name="TopBar" Background="#0b0f19">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
 
             </Grid.ColumnDefinitions>
-            <Grid Margin="2" shell:WindowChrome.IsHitTestVisibleInChrome="True" Grid.Column="0">
+            <Grid Margin="2,2,2,0" shell:WindowChrome.IsHitTestVisibleInChrome="True" Grid.Column="0">
 
                 <ItemsControl ItemsSource="{Binding TabItems}">
                     <ItemsControl.ItemsPanel>
@@ -151,38 +151,91 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.Resources>
                         <DataTemplate DataType="{x:Type local:TabViewModel}">
-                            <Border Height="28" Margin="2,2,2,0" Cursor="Hand">
+                            <Border Cursor="Hand" ToolTipService.InitialShowDelay="1000">
                                 <Border.InputBindings>
                                     <MouseBinding MouseAction="LeftClick" 
-                                          Command="{Binding DataContext.SelectedTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                          CommandParameter="{Binding}"/>
+                                           Command="{Binding DataContext.SelectedTabCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                           CommandParameter="{Binding}"/>
                                 </Border.InputBindings>
 
                                 <Border.Style>
                                     <Style TargetType="Border">
-                                        <Setter Property="Background" Value="#2B2B2B" />
+                                        <Setter Property="Background" Value="#1AFFFFFF" />
                                         <Setter Property="CornerRadius" Value="8" />
+                                        <Setter Property="Height" Value="26" />
+                                        <Setter Property="Margin" Value="2,3,2,3" />
+                                        <Setter Property="BorderThickness" Value="0" />
 
                                         <Style.Triggers>
+                                            <!-- Hover state: flat-dock to the bottom search panel -->
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#222C3F"/>
+                                                <Setter Property="CornerRadius" Value="8,8,0,0"/>
+                                                <Setter Property="Height" Value="29"/>
+                                                <Setter Property="Margin" Value="2,3,2,0"/>
+                                                <Setter Property="BorderBrush" Value="#14FFFFFF"/>
+                                                <Setter Property="BorderThickness" Value="1,1,1,0"/>
+                                            </Trigger>
+
+                                            <!-- Selected state: flat-dock and blend background perfectly with the search panel -->
                                             <DataTrigger Value="True">
                                                 <DataTrigger.Binding>
                                                     <MultiBinding Converter="{StaticResource TabSelectionConverter}">
                                                         <Binding/>
-                                                        <Binding Path="DataContext.SelectedTab" RelativeSource="{RelativeSource AncestorType= Window}" />
+                                                        <Binding Path="DataContext.SelectedTab" RelativeSource="{RelativeSource AncestorType=Window}" />
                                                     </MultiBinding>
                                                 </DataTrigger.Binding>
 
-                                                <Setter Property="Background" Value="#616161"/>
+                                                <Setter Property="Background" Value="#161D31"/>
                                                 <Setter Property="CornerRadius" Value="8,8,0,0"/>
+                                                <Setter Property="Height" Value="29"/>
+                                                <Setter Property="Margin" Value="2,3,2,0"/>
+                                                <Setter Property="BorderBrush" Value="#14FFFFFF"/>
+                                                <Setter Property="BorderThickness" Value="1,1,1,0"/>
                                             </DataTrigger>
-
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="BorderBrush" Value="#555"/>
-                                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                            </Trigger>
                                         </Style.Triggers>
                                     </Style>
                                 </Border.Style>
+
+                                <Border.ToolTip>
+                                    <ToolTip Background="Transparent" BorderThickness="0" Padding="0">
+                                        <Border Background="#E60F172A" BorderBrush="#14FFFFFF" BorderThickness="1" CornerRadius="12" Width="280" Padding="12">
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.4"/>
+                                            </Border.Effect>
+                                            <StackPanel>
+                                                <!-- Header -->
+                                                <TextBlock Text="Вкладка" Foreground="#94A3B8" FontSize="11" FontWeight="Bold" Margin="0,0,0,4"/>
+
+                                                <!-- Title -->
+                                                <TextBlock Text="{Binding Title}" Foreground="White" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,0,0,4"/>
+
+                                                <!-- URL -->
+                                                <TextBlock Text="{Binding Url, Converter={StaticResource UrlDisplayConverter}}" Foreground="#64748B" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,0,0,10"/>
+
+                                                <!-- Separator -->
+                                                <Border Height="1" Background="#14FFFFFF" Margin="0,0,0,10"/>
+
+                                                <!-- Memory Usage info -->
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- RAM/Chip Path Icon -->
+                                                    <Path Grid.Column="0" Data="M2 3h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 2v2h4V5H5zm0 4v2h4V9H5zm0 4v2h4v-2H5z" 
+                                                          Fill="#3B82F6" Width="14" Height="14" Margin="0,0,8,0" Stretch="Uniform" VerticalAlignment="Center"/>
+
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <TextBlock Text="Использование памяти: " Foreground="#94A3B8" FontSize="12"/>
+                                                        <TextBlock Text="{Binding MemoryUsage}" Foreground="#3B82F6" FontSize="12" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </ToolTip>
+                                </Border.ToolTip>
 
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -204,7 +257,7 @@
                         </DataTemplate>
 
                         <DataTemplate DataType = "{x:Type local:AddTabButton}">
-                            <Border Width="20" Height="20" CornerRadius="12" Background="#666666" VerticalAlignment="Center" Margin="5,0" BorderThickness="0">
+                            <Border Width="20" Height="20" CornerRadius="12" Background="#161d31" Cursor="Hand" VerticalAlignment="Center" Margin="5,0" BorderThickness="0">
                                 <Button Style="{StaticResource ChromeButtonStyle}" Command="{Binding DataContext.AddTabCommand, RelativeSource={RelativeSource AncestorType=Window} }" Margin="-2,0,0,0">
                                     <Path Data="M4 0C4.36804 6.55429e-06 4.66674 0.298038 4.66699 0.666016V3.33301H7.33301C7.70121 3.33301 8 3.6318 8 4C7.99988 4.3681 7.70114 4.66602 7.33301 4.66602H4.66699V7.33301C4.66699 7.7012 4.36819 7.99999 4 8C3.6318 8 3.33301 7.70121 3.33301 7.33301V4.66602H0.666992C0.298865 4.66602 0.000115602 4.3681 0 4C0 3.6318 0.298793 3.33301 0.666992 3.33301H3.33301V0.666016C3.33326 0.298033 3.63196 -1.60876e-08 4 0Z" Fill="#B3B1B1"/>
                                 </Button>
@@ -267,35 +320,71 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-
-                    <Border Background="#1AFFFFFF" 
-                            CornerRadius="10"
-                            Padding="8,0"
-                            Margin="4"
-                            VerticalAlignment="Stretch">
-                        <ComboBox x:Name="ChangedSearchSystem" 
-                                  ItemsSource="{Binding SearchSystems}" 
-                                  SelectedItem="{Binding SelectedTab.CurrentSearchEngine, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                    
+                    <ToggleButton x:Name="ChangedSearchSystem" 
+                                  IsChecked="{Binding IsSearchMenuOpen, Mode=TwoWay}"
+                                  Width="90" Height="Auto" 
+                                  Background="Transparent" 
                                   BorderThickness="0" 
-                                  VerticalAlignment="Center"
-                                  Height="22"
-                                  Width="100"
-                                  Foreground="#F8FAFC" Background="#2e3446">
-                            <ComboBox.Resources>
-                                <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#161D31" />
-                                <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}" Color="#F8FAFC" />
-                                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#3B82F6" />
-                                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFF" />
-                            </ComboBox.Resources>
-                        </ComboBox>
-                    </Border>
+                                  BorderBrush="Transparent" 
+                                  Cursor="Hand">
+                        <TextBlock Text="{Binding SelectedSearchSystem.Name}" Foreground="White" VerticalAlignment="Center"/>
+                    </ToggleButton>
+                    <Popup IsOpen="{Binding IsSearchMenuOpen,Mode=TwoWay}"
+                           StaysOpen="False"
+                           PlacementTarget="{Binding ElementName=ChangedSearchSystem}"
+                           Placement="Bottom"
+                           AllowsTransparency="True"
+                           PopupAnimation="Fade">
+
+                        <Border Background="#2B2B2B" BorderBrush="#404040"
+                                BorderThickness="1" CornerRadius="6"
+                                Padding="4" Margin="0,4,0,0">
+                            <ListBox ItemsSource="{Binding LocalSearchSystems}"
+                                     SelectedItem="{Binding SelectedSearchSystem, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <Border x:Name="ItemBorder" Background="Transparent" CornerRadius="4" Padding="8,4">
+                                                        <ContentPresenter/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#3F3F3F"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter TargetName="ItemBorder" Property="Background" Value="#505050"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type local:SearchSystem}">
+                                        <StackPanel Orientation="Horizontal" Margin="4">
+                                            <TextBlock Text="{Binding Name}" Foreground="#e0e0e0" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Border>
+
+                    </Popup>
                     <Grid Grid.Column="1" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Search Icon matching history style -->
+                        <!-- Search Icon -->
                         <Path Grid.Column="0" 
                               Data="M11,3 A8,8 0 1,0 11,19 A8,8 0 1,0 11,3 M21,21 L16.65,16.65" 
                               Stroke="#94A3B8" 
