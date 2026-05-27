@@ -1,41 +1,100 @@
 {
-  "security":
-  {
+  "security": {
     "title": "Безопасность",
-    "content": "настройки двухфакторной аутентификации..."
+    "content": [
+      {
+        "id": "Clear history on close",
+        "label": "Очищать историю посещений при закрытии браузера",
+        "type": "toggle",
+        "value": false
+      },
+      {
+        "id": "Safe browsing",
+        "label": "Безопасный просмотр (блокировать опасные и вредоносные сайты)",
+        "type": "toggle",
+        "value": true
+      },
+      {
+        "id": "Block third party cookies",
+        "label": "Блокировать сторонние файлы cookie в режиме инкогнито",
+        "type": "toggle",
+        "value": true
+      }
+    ]
   },
-  "passwords":
-  {
+  "passwords": {
     "title": "Пароли",
-    "content": "настройки управления паролями..."
+    "content": [
+      {
+        "id": "Offer to save passwords",
+        "label": "Предлагать сохранение паролей для сайтов",
+        "type": "toggle",
+        "value": true
+      },
+      {
+        "id": "Auto sign in",
+        "label": "Автоматический вход с использованием сохраненных учетных данных",
+        "type": "toggle",
+        "value": true
+      }
+    ]
   },
-  "appearance":
-  {
+  "appearance": {
     "title": "Внешний вид",
-    "content": "настройки темы, шрифтов и других визуальных элементов..."
+    "content": [
+      {
+        "id": "Dark mode",
+        "label": "Темный режим интерфейса",
+        "type": "toggle",
+        "value": true
+      },
+      {
+        "id": "Show home button",
+        "label": "Показывать кнопку \"Главная страница\" на панели управления",
+        "type": "toggle",
+        "value": true
+      },
+      {
+        "id": "Show bookmarks bar",
+        "label": "Показывать панель закладок под адресной строкой",
+        "type": "toggle",
+        "value": false
+      }
+    ]
   },
-  "SearchSystem":
-  {
+  "SearchSystem": {
     "title": "Система поиска",
     "content": {
       "id": "Search system",
-      "label": "Система поиска",
+      "label": "Поисковая система по умолчанию",
       "choise": [ "Google", "Bing", "DuckDuckGo", "Yandex", "Yahoo", "Ask" ],
       "value": "Google"
     }
   },
-  "default":
-  {
+  "default": {
     "title": "Браузер по умолчанию",
     "content": {
       "id": "Default browser",
-      "label": "Браузер по умолчанию"
-
+      "label": "Использовать Kar как браузер по умолчанию на этом компьютере",
+      "type": "toggle",
+      "value": false
     }
   },
-  "language":
-  {
+  "language": {
     "title": "Язык",
-    "content": "настройки языка интерфейса..."
+    "content": [
+      {
+        "id": "Interface language",
+        "label": "Основной язык интерфейса браузера",
+        "choise": [ "Русский", "English", "Deutsch", "Français" ],
+        "value": "Русский"
+      },
+      {
+        "id": "Offer translation",
+        "label": "Предлагать перевод страниц, если их язык отличается от основного",
+        "type": "toggle",
+        "value": true
+      }
+    ]
   }
 }
