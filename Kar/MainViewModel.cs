@@ -1,13 +1,14 @@
 ﻿using CefSharp;
-using Kar.Settings; 
+using Kar;
+using Kar.Settings;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using WPF = System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
+using WPF = System.Windows;
 
 namespace Kar
 {
@@ -16,10 +17,44 @@ namespace Kar
         private TabViewModel _selectedTab;
         private MainWindow mainWindow;
         private IWebBrowser? _browser;
-        
+
         private readonly SessionManager _sessionManager = new SessionManager();
 
-        public  SettingsBridge AppSettingsBridge { get;}
+        private bool _isSearchMenuOpen;
+
+        public bool IsSearchMenuOpen
+        {
+            get => _isSearchMenuOpen;
+            set
+            {
+                if (_isSearchMenuOpen != value)
+                {
+                    _isSearchMenuOpen = value;
+                    OnPropertyChanged(nameof(IsSearchMenuOpen));
+                }
+            }
+        }
+
+        private SearchSystem _selectedSearchSystem;
+        public SearchSystem SelectedSearchSystem
+        {
+            get
+            {
+                return _selectedSearchSystem ?? LocalSearchSystems.FirstOrDefault();
+            }
+            set
+            {
+                if (_selectedSearchSystem != value)
+                {
+                    _selectedSearchSystem = value;
+                    OnPropertyChanged(nameof(SelectedSearchSystem));
+
+                    IsSearchMenuOpen = false;
+                }
+            }
+        }
+
+        public SettingsBridge AppSettingsBridge { get; }
 
         private string _globalSearchEngine = "Google";
         public string GlobalSearchEngine
@@ -45,6 +80,16 @@ namespace Kar
 
         public ObservableCollection<DownloadItemModel> RecentDownloads { get; set; } = new ObservableCollection<DownloadItemModel>();
 
+        public ObservableCollection<SearchSystem> LocalSearchSystems { get; } = new ObservableCollection<SearchSystem>
+        {
+            new SearchSystem("Google","https://www.google.com/search?q="),
+            new SearchSystem("Bing","https://www.bing.com/search?q="),
+            new SearchSystem("DuckDuckGo","https://duckduckgo.com/?q="),
+            new SearchSystem("Yandex","https://www.yandex.com/search?text="),
+            new SearchSystem("Yahoo","https://search.yahoo.com/search?p="),
+            new SearchSystem("Ask","https://www.ask.com/web?q=")
+        };
+
         public TabViewModel SelectedTab
         {
             get => _selectedTab;
@@ -54,7 +99,7 @@ namespace Kar
                 OnPropertyChanged(nameof(SelectedTab));
             }
         }
-        
+
         public IWebBrowser? Browser
         {
             get => _browser;
@@ -112,7 +157,8 @@ namespace Kar
                     }
                     Tabs.Remove(tab);
 
-                    if (Tabs.Count == 0) {
+                    if (Tabs.Count == 0)
+                    {
                         mainWindow.Close();
                     }
                 }
@@ -154,8 +200,8 @@ namespace Kar
 
             OpenDownloadsFolderCommand = new RelayCommand(obj =>
             {
-            string userDownloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
-            OpenFolderExplorer(userDownloadsPath);
+                string userDownloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+                OpenFolderExplorer(userDownloadsPath);
             });
 
 
@@ -167,7 +213,7 @@ namespace Kar
             var SavedTabs = _sessionManager.LoadSession();
             if (SavedTabs != null && SavedTabs.Any())
             {
-                foreach(var tab in SavedTabs)
+                foreach (var tab in SavedTabs)
                 {
                     RestoreTab(tab);
                 }
@@ -177,18 +223,18 @@ namespace Kar
                 AddNewTab(string.Empty);
             }
         }
-        public string FormatSearchQuery(string userInpur, string localSearchEngine)
+        public string FormatSearchQuery(string userInpur, string localSearchSystem)
         {
-            if(string.IsNullOrWhiteSpace(userInpur)) return string.Empty;
+            if (string.IsNullOrWhiteSpace(userInpur)) return string.Empty;
 
-            if(userInpur.Contains(".")&& userInpur.Contains(" "))
+            if (userInpur.Contains(".") && userInpur.Contains(" "))
             {
-                return userInpur.StartsWith("http")? userInpur : $"https://{userInpur}";
+                return userInpur.StartsWith("http") ? userInpur : $"https://{userInpur}";
             }
 
             string encodedQuery = Uri.EscapeDataString(userInpur);
 
-            return localSearchEngine switch
+            return localSearchSystem switch
             {
                 "Google" => $"https://www.google.com/search?q={encodedQuery}",
                 "Bing" => $"https://www.bing.com/search?q={encodedQuery}",
@@ -197,16 +243,16 @@ namespace Kar
                 "Yahoo" => $"https://search.yahoo.com/search?p={encodedQuery}",
                 "Ask" => $"https://www.ask.com/web?q={encodedQuery}",
                 _ => $"https://www.google.com/search?q={encodedQuery}"
-            };  
+            };
         }
         public void AddNewTab(string url)
         {
-            
-            string currentEngine = this.GlobalSearchEngine;
-            
-            string FinalUrl= FormatSearchQuery(url, currentEngine);
 
-            var newTab = new TabViewModel { Title = "Новая вкладка", Url = url , CurrentSearchEngine = currentEngine };          
+            string currentEngine = this.GlobalSearchEngine;
+
+            string FinalUrl = FormatSearchQuery(url, currentEngine);
+
+            var newTab = new TabViewModel { Title = "Новая вкладка", Url = url, CurrentSearchEngine = currentEngine };
 
             if (string.IsNullOrEmpty(url) || url == "about:home")
             {
@@ -223,8 +269,8 @@ namespace Kar
             var newTab = new TabViewModel
             {
                 Title = dto.Title,
-                Url = (string.IsNullOrEmpty(dto.Url) || dto.Url== "Empty URL") ? "Kar/Homepage/home.html" : dto.Url,
-                NavigationHistory = dto.NavigationHistory ?? new List<string>(), 
+                Url = (string.IsNullOrEmpty(dto.Url) || dto.Url == "Empty URL") ? "Kar/Homepage/home.html" : dto.Url,
+                NavigationHistory = dto.NavigationHistory ?? new List<string>(),
                 CurrentHistoryIndex = dto.CurrentHistoryIndex,
             };
             Tabs.Add(newTab);
@@ -232,24 +278,25 @@ namespace Kar
         }
 
         public void SaveCurrentSession()
-        { try
-            { 
-            if (Tabs == null || Tabs.Count == 0)
+        {
+            try
             {
-                //System.Windows.MessageBox.Show("Отладка: Коллекция вкладок пуста, сохранять нечего.", "Session Debug");
-                return;
-            }
+                if (Tabs == null || Tabs.Count == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("Отладка: Коллекция вкладок пуста, сохранять нечего.", "Session Debug");
+                    return;
+                }
 
-            string path = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Settings", "session.yaml");
-            //System.Windows.MessageBox.Show($"Отладка: Успешно!\nФайл должен быть здесь:\n{path}", "Session Debug");
+                string path = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Settings", "session.yaml");
+                System.Diagnostics.Debug.WriteLine($"Отладка: Успешно!\nФайл должен быть здесь:\n{path}", "Session Debug");
 
-           
+
                 _sessionManager.SaveSession(Tabs, false);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Сессия] Ошибка при сохранении сессии: {ex.Message}");
-                //System.Windows.MessageBox.Show($"Критическая ошибка сохранения:\n{ex.Message}\n\n{ex.StackTrace}", "Session Error");
+
             }
         }
         public void OpenFolderExplorer(string filePath)
@@ -258,13 +305,13 @@ namespace Kar
             {
                 if (string.IsNullOrWhiteSpace(filePath)) return;
 
-                if(File.Exists(filePath))
+                if (File.Exists(filePath))
                 {
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                     {
                         FileName = "explorer.exe",
                         Arguments = $"/select,\"{filePath}\"",
-                        UseShellExecute = true  
+                        UseShellExecute = true
                     });
                 }
                 else if (Directory.Exists(filePath))
@@ -277,11 +324,11 @@ namespace Kar
                     });
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Файловая система] Ошибка при открытии проводника: {ex.Message}");
             }
-            
+
         }
 
         private void HandleSettingsUpdate(string jsonContent)
@@ -291,11 +338,12 @@ namespace Kar
                 using var JsonDoc = JsonDocument.Parse(jsonContent);
                 string? newEngine = null;
 
-                if (JsonDoc.RootElement.TryGetProperty("SearchSystem", out var searchSystem)){
+                if (JsonDoc.RootElement.TryGetProperty("SearchSystem", out var searchSystem))
+                {
                     if (searchSystem.ValueKind == JsonValueKind.Object && searchSystem.TryGetProperty("content", out var content) &&
                 content.TryGetProperty("value", out var value)) newEngine = value.GetString();
                     else if (searchSystem.ValueKind == JsonValueKind.String) newEngine = searchSystem.GetString();
-                    
+
                 }
 
                 if (!string.IsNullOrEmpty(newEngine))
@@ -342,6 +390,7 @@ namespace Kar
     {
     }
 
+
     public class SearchSystem
     {
         public string Name { get; set; } = "";
@@ -352,24 +401,24 @@ namespace Kar
             Url = url;
         }
     }
-        public class RelayCommand : ICommand
+    public class RelayCommand : ICommand
+    {
+        private readonly Action<object?> _execute;
+        private readonly Predicate<object?>? _canExecute;
+
+        public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
         {
-            private readonly Action<object?> _execute;
-            private readonly Predicate<object?>? _canExecute;
-
-            public RelayCommand(Action<object?> execute, Predicate<object?>? canExecute = null)
-            {
-                _execute = execute;
-                _canExecute = canExecute;
-            }
-
-            public bool CanExecute(object? parameter) => _canExecute == null || _canExecute(parameter);
-            public void Execute(object? parameter) => _execute(parameter);
-            public event EventHandler? CanExecuteChanged
-            {
-                add { CommandManager.RequerySuggested += value; }
-                remove { CommandManager.RequerySuggested -= value; }
-            }
+            _execute = execute;
+            _canExecute = canExecute;
         }
-    
+
+        public bool CanExecute(object? parameter) => _canExecute == null || _canExecute(parameter);
+        public void Execute(object? parameter) => _execute(parameter);
+        public event EventHandler? CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+    }
+
 }
