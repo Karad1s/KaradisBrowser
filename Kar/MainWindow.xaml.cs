@@ -7,6 +7,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Interop;
+using System.Runtime.InteropServices;
 using WPF = System.Windows;
 
 namespace Kar
@@ -29,6 +31,7 @@ namespace Kar
         public MainWindow()
         {
             InitializeComponent();
+            SourceInitialized += MainWindow_SourceInitialized;
 
             if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
             {
@@ -74,6 +77,12 @@ namespace Kar
             {
                 this.BorderThickness = new Thickness(0);
             }
+        }
+
+        private void MainWindow_SourceInitialized(object sender, EventArgs e)
+        {
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+            HwndSource.FromHwnd(handle)?.AddHook(WindowProc);
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -127,6 +136,7 @@ namespace Kar
                     this.ResizeMode = ResizeMode.NoResize;
                     this.WindowState = WindowState.Normal;
 
+
                     this.Left = screen.Bounds.Left;
                     this.Top = screen.Bounds.Top;
                     this.Width = screen.Bounds.Width;
@@ -156,11 +166,6 @@ namespace Kar
                 }
             });
         }
-
-        //private void ChangedSearchSystem_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        //{
-        //    if (ChangedSearchSystem.SelectedItem is "Google") { }
-        //}
 
         private void SuggestionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -216,20 +221,43 @@ namespace Kar
             }
         }
 
+        private void NegativeToUrl(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return;
+
+            if (IsSearchQuery(query))
+            {
+
+                if (ViewModel.SelectedTab != null)
+                {
+                    string currentSearchEngine = ViewModel.SelectedTab.CurrentSearchEngine ?? ViewModel.GlobalSearchEngine;
+                    ViewModel.SelectedTab.Url = ViewModel.FormatSearchQuery(query, currentSearchEngine);
+                }
+            }
+            else
+            {
+                if (ViewModel.SelectedTab != null)
+                {
+                    ViewModel.SelectedTab.Url = query.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? query : "http://" + query;
+                }
+            }
+        }
+
         private async void UrlTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
+
             if (e.Key == Key.Enter)
             {
                 e.Handled = true;
                 string userInput = UrlTextBox.Text;
                 string currentTabEngine = ViewModel.SelectedTab?.CurrentSearchEngine ?? "Google";
-                WPF.MessageBox.Show($"Для вкладки выбран: '{currentTabEngine}'\nГлобально: '{ViewModel.GlobalSearchEngine}'");
+                System.Diagnostics.Debug.WriteLine($"Для вкладки выбран: '{currentTabEngine}'\nГлобально: '{ViewModel.GlobalSearchEngine}'");
 
                 string currentSearchEngine = ViewModel.SelectedTab?.CurrentSearchEngine ?? "Google";
                 string finalUrl = ViewModel.FormatSearchQuery(userInput, currentSearchEngine);
 
                 if (ViewModel.SelectedTab != null) ViewModel.SelectedTab.Url = finalUrl;
-
+                NegativeToUrl(userInput);
                 Keyboard.ClearFocus();
             }
         }
@@ -324,6 +352,15 @@ namespace Kar
 
 
         }
+
+        private bool IsSearchQuery(string input)
+        {
+            if (input.Contains(" ")) return true;
+
+            if (input.StartsWith("Localhost", StringComparison.OrdinalIgnoreCase) || input.StartsWith("127.0.0.1")) return false;
+
+            return !input.Contains(".");
+        }
         private void DoDelCache(TabViewModel tab)
         {
 
@@ -395,8 +432,14 @@ namespace Kar
                                 break;
                             case "ToggleFullScreen":
                                 targetCommand = new RelayCommand(_ => {
-                                    ToggleFullScreen(this.WindowState != WindowState.Maximized);
-                                    System.Diagnostics.Debug.WriteLine("[WPF Command] Вызвано открытие в полном окне");
+                                    if (this.WindowState != WindowState.Maximized)
+                                    {
+                                        WindowState = WindowState.Maximized;
+                                    }
+                                    else
+                                    {
+                                        WindowState = WindowState.Normal;
+                                    }
                                 });
                                 break;
                             case "ShowDevTools":
@@ -493,7 +536,79 @@ namespace Kar
             }
         }
 
+        private IntPtr WindowProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == 0x0024)
+            {
+                WmGetMinMaxInfo(hwnd, lParam);
+                handled = true;
+            }
+            return IntPtr.Zero;
+        }
 
+
+        [DllImport("user32.dll")]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MINMAXINFO
+        {
+            public POINT ptReserved;
+            public POINT ptMaxSize;
+            public POINT ptMaxPosition;
+            public POINT ptMinTrackSize;
+            public POINT ptMaxTrackSize;
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private struct MONITORINFO
+        {
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        private void WmGetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
+        {
+            MINMAXINFO mmi = (MINMAXINFO)Marshal.PtrToStructure<MINMAXINFO>(lParam);
+
+            IntPtr monitor = MonitorFromWindow(hwnd, 2);
+            if (monitor != IntPtr.Zero)
+            {
+                MONITORINFO monitorInfo = new MONITORINFO();
+                monitorInfo.cbSize = Marshal.SizeOf(typeof(MONITORINFO));
+                GetMonitorInfo(monitor, ref monitorInfo);
+
+                RECT area = (this.WindowStyle == WindowStyle.None) ? monitorInfo.rcMonitor : monitorInfo.rcWork;
+
+                mmi.ptMaxSize.X = Math.Abs(area.Right - area.Left);
+                mmi.ptMaxSize.Y = Math.Abs(area.Bottom - area.Top);
+                mmi.ptMaxPosition.X = Math.Abs(area.Left);
+                mmi.ptMaxPosition.Y = Math.Abs(area.Top);
+            }
+            Marshal.StructureToPtr(mmi, lParam, true);
+        }
+    
 
         public class SettingBridge
         {

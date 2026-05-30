@@ -15,10 +15,10 @@
 
     <WindowChrome.WindowChrome>
         <shell:WindowChrome
-            CaptionHeight="36"
+            CaptionHeight="30"
             ResizeBorderThickness="5"
             GlassFrameThickness="0"
-            CornerRadius="10"/>
+            CornerRadius="0"/>
 
     </WindowChrome.WindowChrome>
 
