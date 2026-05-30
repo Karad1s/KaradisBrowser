@@ -1,15 +1,17 @@
-﻿using CefSharp;
-using CefSharp.Wpf;
-using Kar;
-using Kar.Handlers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Runtime.InteropServices;
-using WPF = System.Windows;
+using CefSharp;
+using CefSharp.Wpf;
+using Kar.Handlers;
 
 namespace Kar
 {
@@ -38,7 +40,8 @@ namespace Kar
                 return;
             }
 
-            ViewModel = new MainViewModel(this);
+            ViewModel = new MainViewModel(new WpfDispatcherService(this.Dispatcher));
+            ViewModel.CloseRequested += () => Close();
 
             ViewModel.Tabs.CollectionChanged += (s, e) =>
             {
@@ -50,13 +53,12 @@ namespace Kar
                     }
                 }
             };
+
             this.SourceInitialized += (s, e) =>
             {
-                IntPtr handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
-                var screen = System.Windows.Forms.Screen.FromHandle(handle);
-
-                this.MaxHeight = screen.WorkingArea.Height;
-                this.MaxWidth = screen.WorkingArea.Width;
+                var screen = GetCurrentScreenBounds(true);
+                this.MaxHeight = screen.Height;
+                this.MaxWidth = screen.Width;
             };
 
             ApplyShortcuts();
@@ -65,7 +67,6 @@ namespace Kar
             SetupTabManager();
             UpdBrowserUI();
         }
-
 
         private void MainWindow_StateChanged(object sender, EventArgs e)
         {
@@ -114,13 +115,32 @@ namespace Kar
             }
         }
 
+        private Rect GetCurrentScreenBounds(bool workingAreaOnly)
+        {
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            IntPtr monitor = MonitorFromWindow(hwnd, 2); // MONITOR_DEFAULTTONEAREST = 2
+            if (monitor != IntPtr.Zero)
+            {
+                MONITORINFO monitorInfo = new MONITORINFO();
+                monitorInfo.cbSize = Marshal.SizeOf(typeof(MONITORINFO));
+                if (GetMonitorInfo(monitor, ref monitorInfo))
+                {
+                    var rect = workingAreaOnly ? monitorInfo.rcWork : monitorInfo.rcMonitor;
+                    return new Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+                }
+            }
+            // Fallback to WPF SystemParameters
+            return workingAreaOnly
+                ? new Rect(SystemParameters.WorkArea.Left, SystemParameters.WorkArea.Top, SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height)
+                : new Rect(0, 0, SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
+        }
+
         public void ToggleFullScreen(bool isFullScreen)
         {
             Dispatcher.Invoke(() =>
             {
                 if (isFullScreen)
                 {
-
                     _prevWindowState = this.WindowState;
                     _prevWindowStyle = this.WindowStyle;
                     _prevResizeMode = this.ResizeMode;
@@ -129,25 +149,23 @@ namespace Kar
                     {
                         _normalWindowBounds = new Rect(this.Left, this.Top, this.Width, this.Height);
                     }
-                    var handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
-                    var screen = System.Windows.Forms.Screen.FromHandle(handle);
+
+                    var screen = GetCurrentScreenBounds(false);
 
                     this.WindowStyle = WindowStyle.None;
                     this.ResizeMode = ResizeMode.NoResize;
                     this.WindowState = WindowState.Normal;
 
-
-                    this.Left = screen.Bounds.Left;
-                    this.Top = screen.Bounds.Top;
-                    this.Width = screen.Bounds.Width;
-                    this.Height = screen.Bounds.Height;
+                    this.Left = screen.Left;
+                    this.Top = screen.Top;
+                    this.Width = screen.Width;
+                    this.Height = screen.Height;
 
                     TopRow.Height = new GridLength(0);
                     PanelControl.Height = new GridLength(0);
                 }
                 else
                 {
-
                     if (_prevWindowState == WindowState.Normal)
                     {
                         this.WindowState = WindowState.Normal;
@@ -190,6 +208,7 @@ namespace Kar
                 ViewModel.SelectedTab.Url = finalUrl;
             }
         }
+
         private async void UrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!UrlTextBox.IsFocused)
@@ -202,11 +221,11 @@ namespace Kar
 
             if (query.Length > 2 && !query.StartsWith("http"))
             {
-                var suggestions = await GetSearchSuggestions(query);
+                await ViewModel.LoadSearchSuggestionsAsync(query);
 
-                if (suggestions.Any())
+                if (ViewModel.SearchSuggestions.Any())
                 {
-                    SuggestionList.ItemsSource = suggestions;
+                    SuggestionList.ItemsSource = ViewModel.SearchSuggestions;
                     SuggestionPopup.PlacementTarget = UrlTextBox;
                     SuggestionPopup.IsOpen = true;
                 }
@@ -227,7 +246,6 @@ namespace Kar
 
             if (IsSearchQuery(query))
             {
-
                 if (ViewModel.SelectedTab != null)
                 {
                     string currentSearchEngine = ViewModel.SelectedTab.CurrentSearchEngine ?? ViewModel.GlobalSearchEngine;
@@ -243,9 +261,8 @@ namespace Kar
             }
         }
 
-        private async void UrlTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void UrlTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-
             if (e.Key == Key.Enter)
             {
                 e.Handled = true;
@@ -262,27 +279,6 @@ namespace Kar
             }
         }
 
-        private async Task<List<string>> GetSearchSuggestions(string query)
-        {
-            try
-            {
-                using (var client = new System.Net.Http.HttpClient())
-                {
-                    string url = $"http://suggestqueries.google.com/complete/search?client=firefox&q={Uri.EscapeDataString(query)}";
-                    var response = await client.GetStringAsync(url);
-
-                    using (JsonDocument json = JsonDocument.Parse(response))
-                    {
-                        // Исправлено CS0021
-                        return json.RootElement[1]
-                            .EnumerateArray()
-                            .Select(x => x.GetString())
-                            .ToList();
-                    }
-                }
-            }
-            catch { return new List<string>(); }
-        }
         private void SetupTabManager()
         {
             ViewModel.PropertyChanged += (s, e) =>
@@ -291,9 +287,9 @@ namespace Kar
                 {
                     UpdBrowserUI();
                 }
-
             };
         }
+
         private void UpdBrowserUI()
         {
             var selectedTab = ViewModel.SelectedTab;
@@ -303,18 +299,16 @@ namespace Kar
             {
                 var newBrowser = new ChromiumWebBrowser();
                 var downloadHandler = new CustomDownloadHandler();
-                selectedTab.Browser = newBrowser;
+                
+                var browserOps = new CefSharpBrowserOperations(newBrowser);
+                selectedTab.BrowserOperations = browserOps;
+
                 downloadHandler.DownloadStateChanged += OnDownloadStateChanged;
                 newBrowser.MenuHandler = new CustomMenuHandler();
-                newBrowser.LifeSpanHandler = new CustomLifeSpanHandler();
-                newBrowser.RequestHandler = new CustomRequestHandler();
+                newBrowser.LifeSpanHandler = new CustomLifeSpanHandler(url => ViewModel.AddNewTab(url), url => OpenPopupInWindow(url));
+                newBrowser.RequestHandler = new CustomRequestHandler(url => ViewModel.AddNewTab(url));
                 newBrowser.KeyboardHandler = new CustomKeyboardHandler(this);
                 newBrowser.DownloadHandler = downloadHandler;
-
-
-                string SettingsPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Settings", "settings.json");
-                var settingsService = new Settings.FileSettingsService(SettingsPath);
-                var settingsBridge = new Settings.SettingsBridge(settingsService);
 
                 newBrowser.JavascriptObjectRepository.Settings.LegacyBindingEnabled = true;
                 newBrowser.JavascriptObjectRepository.Register("SettingsHandler", new SettingBridge(), options: BindingOptions.DefaultBinder);
@@ -328,7 +322,7 @@ namespace Kar
                     });
                 };
 
-                newBrowser.DisplayHandler = new CustomDisplayHandler(selectedTab, Dispatcher);
+                newBrowser.DisplayHandler = new CustomDisplayHandler(selectedTab, Dispatcher, ToggleFullScreen);
 
                 System.Windows.Data.Binding myBinding = new System.Windows.Data.Binding("Url")
                 {
@@ -349,8 +343,6 @@ namespace Kar
                 BrowserHost.Children.Clear();
                 BrowserHost.Children.Add(activeBrowser);
             }
-
-
         }
 
         private bool IsSearchQuery(string input)
@@ -361,10 +353,15 @@ namespace Kar
 
             return !input.Contains(".");
         }
+
         private void DoDelCache(TabViewModel tab)
         {
+            if (tab == null) return;
 
-            if (tab == null || !_browserCache.ContainsKey(tab)) return;
+            // Dispose to unsubscribe events and prevent memory leaks
+            tab.Dispose();
+
+            if (!_browserCache.ContainsKey(tab)) return;
 
             var browser = _browserCache[tab];
             BindingOperations.ClearAllBindings(browser);
@@ -381,16 +378,15 @@ namespace Kar
 
         public void ShowDevTools()
         {
-            WPF.Application.Current.Dispatcher.Invoke(() =>
+            Dispatcher.Invoke(() =>
             {
-                var window = (MainWindow)WPF.Application.Current.MainWindow;
-                var selectedTab = window.ViewModel.SelectedTab;
+                var selectedTab = ViewModel.SelectedTab;
 
-                if (selectedTab != null && window._browserCache.TryGetValue(selectedTab, out var browser))
+                if (selectedTab != null && _browserCache.TryGetValue(selectedTab, out var browser))
                 {
                     var windowInfo = new WindowInfo();
 
-                    var helper = new System.Windows.Interop.WindowInteropHelper(window);
+                    var helper = new System.Windows.Interop.WindowInteropHelper(this);
                     IntPtr hostHandle = helper.Handle;
 
                     windowInfo.SetAsChild(hostHandle, (int)browser.ActualWidth - 500, 0, (int)browser.ActualWidth, (int)browser.ActualHeight);
@@ -419,7 +415,6 @@ namespace Kar
                         {
                             case "NewTab":
                                 targetCommand = ViewModel.AddTabCommand;
-
                                 break;
                             case "CloseTab":
                                 targetCommand = ViewModel.CloseTabCommand;
@@ -457,7 +452,6 @@ namespace Kar
                             System.Diagnostics.Debug.WriteLine($"[YAML] Действие '{shortcut.Action}' не распознано в switch.");
                         }
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -546,7 +540,6 @@ namespace Kar
             return IntPtr.Zero;
         }
 
-
         [DllImport("user32.dll")]
         private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 
@@ -608,20 +601,17 @@ namespace Kar
             }
             Marshal.StructureToPtr(mmi, lParam, true);
         }
-    
 
         public class SettingBridge
         {
             public void OpenSettings()
             {
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true });
-
             }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-
         }
     }
 }

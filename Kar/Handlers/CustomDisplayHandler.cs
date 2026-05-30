@@ -1,5 +1,6 @@
-﻿using WPF = System.Windows;
-using System.Windows.Input;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Threading;
 using CefSharp;
 using CefStruct = CefSharp.Structs;
@@ -10,20 +11,21 @@ namespace Kar.Handlers
     {
         private readonly TabViewModel _tab;
         private readonly Dispatcher _dispatcher;
+        private readonly Action<bool>? _onFullscreenModeChange;
 
-        public CustomDisplayHandler(TabViewModel tab, Dispatcher dispatcher)
+        public CustomDisplayHandler(TabViewModel tab, Dispatcher dispatcher, Action<bool>? onFullscreenModeChange = null)
         {
-            _tab = tab;
-            _dispatcher = dispatcher;
+            _tab = tab ?? throw new ArgumentNullException(nameof(tab));
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+            _onFullscreenModeChange = onFullscreenModeChange;
         }
 
         public void OnFullscreenModeChange(IWebBrowser chromiumWebBrowser, IBrowser browser, bool fullscreen)
         {
-            WPF.Application.Current.Dispatcher.Invoke(() =>
+            if (_onFullscreenModeChange != null)
             {
-                var mainWin = WPF.Application.Current.MainWindow as MainWindow;
-                mainWin?.Dispatcher.Invoke(() => mainWin.ToggleFullScreen(fullscreen));
-            });
+                _dispatcher.Invoke(() => _onFullscreenModeChange(fullscreen));
+            }
         }
 
         public void OnAddressChanged(IWebBrowser chromiumWebBrowser, AddressChangedEventArgs addressChangedArgs) { }
@@ -48,6 +50,4 @@ namespace Kar.Handlers
         public void OnStatusMessage(IWebBrowser chromiumWebBrowser, StatusMessageEventArgs statusMessageArgs) { }
         public bool OnConsoleMessage(IWebBrowser chromiumWebBrowser, ConsoleMessageEventArgs consoleMessageArgs) => false;
     }
-
-    
 }

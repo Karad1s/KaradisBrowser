@@ -1,26 +1,32 @@
-﻿using CefSharp;
-using Kar;
-using Kar.Settings;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Input;
-using WPF = System.Windows;
+using Kar.Settings;
 
 namespace Kar
 {
     public class MainViewModel : INotifyPropertyChanged
     {
         private TabViewModel _selectedTab;
-        private MainWindow mainWindow;
-        private IWebBrowser? _browser;
-
+        private readonly IDispatcherService _dispatcherService;
         private readonly SessionManager _sessionManager = new SessionManager();
-
         private bool _isSearchMenuOpen;
+        private SearchSystem _selectedSearchSystem;
+        private string _globalSearchEngine = "Google";
+
+        private static readonly HttpClient HttpClient = new HttpClient();
+        private readonly ObservableCollection<string> _searchSuggestions = new ObservableCollection<string>();
+
+        public event Action? CloseRequested;
 
         public bool IsSearchMenuOpen
         {
@@ -35,7 +41,6 @@ namespace Kar
             }
         }
 
-        private SearchSystem _selectedSearchSystem;
         public SearchSystem SelectedSearchSystem
         {
             get
@@ -56,10 +61,9 @@ namespace Kar
 
         public SettingsBridge AppSettingsBridge { get; }
 
-        private string _globalSearchEngine = "Google";
         public string GlobalSearchEngine
         {
-            get => _globalSearchEngine = "Google";
+            get => _globalSearchEngine;
             private set
             {
                 if (_globalSearchEngine != value)
@@ -69,11 +73,6 @@ namespace Kar
                 }
             }
         }
-
-        public List<string> SearchSystems { get; } = new List<string>
-        {
-            "Google","Bing","DuckDuckGo","Yandex","Yahoo","Ask"
-        };
 
         public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
         public CompositeCollection TabItems { get; set; }
@@ -90,6 +89,8 @@ namespace Kar
             new SearchSystem("Ask","https://www.ask.com/web?q=")
         };
 
+        public ObservableCollection<string> SearchSuggestions => _searchSuggestions;
+
         public TabViewModel SelectedTab
         {
             get => _selectedTab;
@@ -100,31 +101,23 @@ namespace Kar
             }
         }
 
-        public IWebBrowser? Browser
-        {
-            get => _browser;
-            set { _browser = value; OnPropertyChanged(); }
-        }
         public ICommand AddTabCommand { get; }
         public ICommand CloseTabCommand { get; }
         public ICommand SelectedTabCommand { get; }
         public ICommand SettingsCommand { get; }
         public ICommand HistoryCommand { get; }
-
         public ICommand ExtentionsCommand { get; }
-
         public ICommand ShowAllDownloadsCommand { get; }
         public ICommand OpenDownloadsFolderCommand { get; }
 
-        public MainViewModel(MainWindow window)
+        public MainViewModel(IDispatcherService dispatcherService)
         {
-            this.mainWindow = window;
+            _dispatcherService = dispatcherService ?? throw new ArgumentNullException(nameof(dispatcherService));
 
-            string settingsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings");
+            string settingsDir = BrowserConfig.SettingsDir;
             if (!Directory.Exists(settingsDir)) Directory.CreateDirectory(settingsDir);
 
-
-            string settingsPath = Path.Combine(settingsDir, "Settings.json");
+            string settingsPath = BrowserConfig.SettingsPath;
             var fileService = new FileSettingsService(settingsPath);
 
             AppSettingsBridge = new SettingsBridge(fileService);
@@ -137,6 +130,7 @@ namespace Kar
                 AddNewTab(string.Empty);
                 System.Diagnostics.Debug.WriteLine("[WPF Command] Вызвано создание новой вкладки!");
             });
+
             CloseTabCommand = new RelayCommand(obj =>
             {
                 if (obj is TabViewModel tab)
@@ -159,11 +153,11 @@ namespace Kar
 
                     if (Tabs.Count == 0)
                     {
-                        mainWindow.Close();
+                        CloseRequested?.Invoke();
                     }
                 }
-                ;
             });
+
             SelectedTabCommand = new RelayCommand(obj =>
             {
                 if (obj is TabViewModel tab)
@@ -174,28 +168,24 @@ namespace Kar
 
             SettingsCommand = new RelayCommand(obj =>
             {
-                var Url = $"file:///{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings", "settings.html").Replace('\\', '/')}";
+                var Url = $"file:///{Path.Combine(BrowserConfig.SettingsDir, "settings.html").Replace('\\', '/')}";
                 AddNewTab(Url);
             });
 
             HistoryCommand = new RelayCommand(obj =>
             {
-                var Url = $"file:///{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "HistoryPage", "history.html").Replace('\\', '/')}";
+                var Url = $"file:///{BrowserConfig.HistoryHtmlPath.Replace('\\', '/')}";
                 AddNewTab(Url);
             });
 
             ExtentionsCommand = new RelayCommand(obj =>
             {
-                var Url = "https://chromewebstore.google.com/category/extensions";
-                AddNewTab(Url);
+                AddNewTab(BrowserConfig.ChromeExtensionsUrl);
             });
 
             ShowAllDownloadsCommand = new RelayCommand(obj =>
             {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string downloadsPageUrl = $"file:///{Path.Combine(baseDir, "Library", "library.html").Replace('\\', '/')}";
-
-                AddNewTab(downloadsPageUrl);
+                AddNewTab($"file:///{BrowserConfig.LibraryHtmlPath.Replace('\\', '/')}");
             });
 
             OpenDownloadsFolderCommand = new RelayCommand(obj =>
@@ -203,7 +193,6 @@ namespace Kar
                 string userDownloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
                 OpenFolderExplorer(userDownloadsPath);
             });
-
 
             TabItems = new CompositeCollection();
             var cont = new CollectionContainer { Collection = Tabs };
@@ -223,41 +212,35 @@ namespace Kar
                 AddNewTab(string.Empty);
             }
         }
-        public string FormatSearchQuery(string userInpur, string localSearchSystem)
-        {
-            if (string.IsNullOrWhiteSpace(userInpur)) return string.Empty;
 
-            if (userInpur.Contains(".") && userInpur.Contains(" "))
+        public string FormatSearchQuery(string userInput, string engineName)
+        {
+            if (string.IsNullOrWhiteSpace(userInput)) return string.Empty;
+
+            if (userInput.Contains(".") && !userInput.Contains(" "))
             {
-                return userInpur.StartsWith("http") ? userInpur : $"https://{userInpur}";
+                return userInput.StartsWith("http") ? userInput : $"https://{userInput}";
             }
 
-            string encodedQuery = Uri.EscapeDataString(userInpur);
-
-            return localSearchSystem switch
+            var system = LocalSearchSystems.FirstOrDefault(s => s.Name.Equals(engineName, StringComparison.OrdinalIgnoreCase));
+            if (system != null)
             {
-                "Google" => $"https://www.google.com/search?q={encodedQuery}",
-                "Bing" => $"https://www.bing.com/search?q={encodedQuery}",
-                "DuckDuckGo" => $"https://duckduckgo.com/?q={encodedQuery}",
-                "Yandex" => $"https://www.yandex.com/search?text={encodedQuery}",
-                "Yahoo" => $"https://search.yahoo.com/search?p={encodedQuery}",
-                "Ask" => $"https://www.ask.com/web?q={encodedQuery}",
-                _ => $"https://www.google.com/search?q={encodedQuery}"
-            };
+                return system.Url + Uri.EscapeDataString(userInput);
+            }
+
+            return $"https://www.google.com/search?q={Uri.EscapeDataString(userInput)}";
         }
+
         public void AddNewTab(string url)
         {
-
             string currentEngine = this.GlobalSearchEngine;
-
             string FinalUrl = FormatSearchQuery(url, currentEngine);
 
-            var newTab = new TabViewModel { Title = "Новая вкладка", Url = url, CurrentSearchEngine = currentEngine };
+            var newTab = new TabViewModel(_dispatcherService) { Title = "Новая вкладка", Url = url, CurrentSearchEngine = currentEngine };
 
-            if (string.IsNullOrEmpty(url) || url == "about:home")
+            if (string.IsNullOrEmpty(url) || url == BrowserConfig.AboutHome)
             {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                newTab.Url = $"file:///{Path.Combine(baseDir, "Homepage", "home.html").Replace('\\', '/')}";
+                newTab.Url = $"file:///{BrowserConfig.HomepageHtmlPath.Replace('\\', '/')}";
             }
 
             Tabs.Add(newTab);
@@ -266,10 +249,10 @@ namespace Kar
 
         public void RestoreTab(TabSessionDto dto)
         {
-            var newTab = new TabViewModel
+            var newTab = new TabViewModel(_dispatcherService)
             {
                 Title = dto.Title,
-                Url = (string.IsNullOrEmpty(dto.Url) || dto.Url == "Empty URL") ? "Kar/Homepage/home.html" : dto.Url,
+                Url = (string.IsNullOrEmpty(dto.Url) || dto.Url == "Empty URL") ? BrowserConfig.FallbackHomeRelative : dto.Url,
                 NavigationHistory = dto.NavigationHistory ?? new List<string>(),
                 CurrentHistoryIndex = dto.CurrentHistoryIndex,
             };
@@ -287,18 +270,17 @@ namespace Kar
                     return;
                 }
 
-                string path = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Settings", "session.yaml");
+                string path = BrowserConfig.SessionPath;
                 System.Diagnostics.Debug.WriteLine($"Отладка: Успешно!\nФайл должен быть здесь:\n{path}", "Session Debug");
-
 
                 _sessionManager.SaveSession(Tabs, false);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Сессия] Ошибка при сохранении сессии: {ex.Message}");
-
             }
         }
+
         public void OpenFolderExplorer(string filePath)
         {
             try
@@ -328,7 +310,40 @@ namespace Kar
             {
                 System.Diagnostics.Debug.WriteLine($"[Файловая система] Ошибка при открытии проводника: {ex.Message}");
             }
+        }
 
+        public async Task LoadSearchSuggestionsAsync(string query)
+        {
+            _dispatcherService.Invoke(() => _searchSuggestions.Clear());
+            if (string.IsNullOrWhiteSpace(query)) return;
+
+            try
+            {
+                string url = $"{BrowserConfig.GoogleSuggestionsApiUrl}{Uri.EscapeDataString(query)}";
+                var response = await HttpClient.GetStringAsync(url);
+
+                using (JsonDocument json = JsonDocument.Parse(response))
+                {
+                    var list = json.RootElement[1]
+                        .EnumerateArray()
+                        .Select(x => x.GetString())
+                        .Where(x => x != null)
+                        .Cast<string>()
+                        .ToList();
+
+                    _dispatcherService.Invoke(() =>
+                    {
+                        foreach (var suggestion in list)
+                        {
+                            _searchSuggestions.Add(suggestion);
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Suggestions] Error fetching suggestions: {ex.Message}");
+            }
         }
 
         private void HandleSettingsUpdate(string jsonContent)
@@ -341,9 +356,8 @@ namespace Kar
                 if (JsonDoc.RootElement.TryGetProperty("SearchSystem", out var searchSystem))
                 {
                     if (searchSystem.ValueKind == JsonValueKind.Object && searchSystem.TryGetProperty("content", out var content) &&
-                content.TryGetProperty("value", out var value)) newEngine = value.GetString();
+                        content.TryGetProperty("value", out var value)) newEngine = value.GetString();
                     else if (searchSystem.ValueKind == JsonValueKind.String) newEngine = searchSystem.GetString();
-
                 }
 
                 if (!string.IsNullOrEmpty(newEngine))
@@ -351,7 +365,7 @@ namespace Kar
                     GlobalSearchEngine = newEngine;
                     System.Diagnostics.Debug.WriteLine($"[Настройки] Обновлена поисковая система: {GlobalSearchEngine}");
 
-                    WPF.Application.Current.Dispatcher.Invoke(() =>
+                    _dispatcherService.Invoke(() =>
                     {
                         foreach (var tab in Tabs)
                         {
@@ -361,7 +375,7 @@ namespace Kar
                 }
                 else
                 {
-                    WPF.MessageBox.Show("Настройки сохранились, но C# не смог найти поле 'SearchSystem' в файле settings.json.", "Ошибка чтения JSON");
+                    System.Windows.MessageBox.Show("Настройки сохранились, но C# не смог найти поле 'SearchSystem' в файле settings.json.", "Ошибка чтения JSON");
                 }
             }
             catch (JsonException ex)
@@ -369,16 +383,17 @@ namespace Kar
                 System.Diagnostics.Debug.WriteLine($"[Настройки] Ошибка при обработке JSON: {ex.Message}");
             }
         }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? Name = null)
         {
-            if (WPF.Application.Current.Dispatcher.CheckAccess())
+            if (_dispatcherService.CheckAccess())
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
             }
             else
             {
-                WPF.Application.Current.Dispatcher.Invoke(() =>
+                _dispatcherService.Invoke(() =>
                 {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
                 });
@@ -390,7 +405,6 @@ namespace Kar
     {
     }
 
-
     public class SearchSystem
     {
         public string Name { get; set; } = "";
@@ -401,6 +415,7 @@ namespace Kar
             Url = url;
         }
     }
+
     public class RelayCommand : ICommand
     {
         private readonly Action<object?> _execute;
@@ -420,5 +435,4 @@ namespace Kar
             remove { CommandManager.RequerySuggested -= value; }
         }
     }
-
 }

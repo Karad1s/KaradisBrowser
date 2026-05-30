@@ -1,11 +1,9 @@
-using CefSharp;
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
+using CefSharp;
 using Kar.Handlers;
 using Kar.HistoryPage;
-
-
 
 namespace Kar
 {
@@ -20,13 +18,35 @@ namespace Kar
             
             Browser.JavascriptObjectRepository.Register("historyBridge", new HistoryBridge(), options: BindingOptions.DefaultBinder);
 
-            Browser.LifeSpanHandler = new CustomLifeSpanHandler();
+            Browser.LifeSpanHandler = new CustomLifeSpanHandler(
+                url => {
+                    var mainWin = Window.GetWindow(this) as MainWindow;
+                    mainWin?.ViewModel.AddNewTab(url);
+                },
+                url => {
+                    var mainWin = Window.GetWindow(this) as MainWindow;
+                    mainWin?.OpenPopupInWindow(url);
+                }
+            );
+
+            Browser.RequestHandler = new CustomRequestHandler(url =>
+            {
+                var mainWin = Window.GetWindow(this) as MainWindow;
+                mainWin?.ViewModel.AddNewTab(url);
+            });
+
             this.DataContextChanged += (s, e) =>
             {
                 if (DataContext is TabViewModel viewModel)
                 {
-                    viewModel.Browser = this.Browser;
-                    Browser.DisplayHandler = new CustomDisplayHandler(viewModel, Dispatcher);
+                    var browserOps = new CefSharpBrowserOperations(this.Browser);
+                    viewModel.BrowserOperations = browserOps;
+
+                    Browser.DisplayHandler = new CustomDisplayHandler(viewModel, Dispatcher, fullscreen =>
+                    {
+                        var mainWin = Window.GetWindow(this) as MainWindow;
+                        mainWin?.ToggleFullScreen(fullscreen);
+                    });
                 }
             };
         }

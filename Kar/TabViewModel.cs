@@ -1,19 +1,20 @@
-using CefSharp;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
-
-
 namespace Kar
 {
-    public class TabViewModel : INotifyPropertyChanged
+    public class TabViewModel : INotifyPropertyChanged, IDisposable
     {
         private string? _title;
         private string? _url;
         private string? _favicon;
-        private IWebBrowser? _browser;
+        private IBrowserOperations? _browserOperations;
+        private string _currentSearchEngine = "Google";
+        private readonly IDispatcherService _dispatcherService;
 
         public bool isIncognito { get; set; } = false;
         public List<string> NavigationHistory { get; set; } = new List<string>();
@@ -80,13 +81,23 @@ namespace Kar
             set { _favicon = value; OnPropertyChanged(); }
         }
 
-        public IWebBrowser? Browser
+        public IBrowserOperations? BrowserOperations
         {
-            get => _browser;
-            set { _browser = value; OnPropertyChanged(); }
+            get => _browserOperations;
+            set
+            {
+                if (_browserOperations != null)
+                {
+                    _browserOperations.AddressChanged -= OnBrowserAddressChanged;
+                }
+                _browserOperations = value;
+                if (_browserOperations != null)
+                {
+                    _browserOperations.AddressChanged += OnBrowserAddressChanged;
+                }
+                OnPropertyChanged();
+            }
         }
-
-        private string _currentSearchEngine = "Google";
 
         public string CurrentSearchEngine
         {
@@ -106,49 +117,47 @@ namespace Kar
         public ICommand ReloadCommand { get; }
         public ICommand HomeCommand { get; }
 
-        public TabViewModel()
+        public TabViewModel(IDispatcherService dispatcherService)
         {
+            _dispatcherService = dispatcherService ?? throw new ArgumentNullException(nameof(dispatcherService));
+
             BackCommand = new RelayCommand(obj =>
             {
-                
-                if (Browser?.CanGoBack == true)
+                if (BrowserOperations?.CanGoBack == true)
                 {
-                    Browser.Back();
+                    BrowserOperations.GoBack();
                 }
             });
             ForwardCommand = new RelayCommand(obj =>
             {
-                if (Browser?.CanGoForward == true)
+                if (BrowserOperations?.CanGoForward == true)
                 {
-                    Browser.Forward();
+                    BrowserOperations.GoForward();
                 }
             });
-            ReloadCommand = new RelayCommand(obj => Browser?.Reload());
+            ReloadCommand = new RelayCommand(obj => BrowserOperations?.Reload());
             HomeCommand = new RelayCommand(obj =>
             {
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string filePath = System.IO.Path.Combine(baseDir, "Homepage", "home.html");
+                string filePath = BrowserConfig.HomepageHtmlPath;
 
-                if (System.IO.File.Exists(filePath))
+                if (File.Exists(filePath))
                 {
                     this.Url = $"file:///{filePath.Replace('\\', '/')}";
                 }
             });
         }
 
-        private void OnBrowserAddresChanged(object sender, AddressChangedEventArgs e)
+        private void OnBrowserAddressChanged(object? sender, string newUrl)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            _dispatcherService.Invoke(() =>
             {
-                string NewUrl = e.Address;
-
-                if(CurrentHistoryIndex == -1 || NavigationHistory[CurrentHistoryIndex] != NewUrl)
+                if(CurrentHistoryIndex == -1 || NavigationHistory[CurrentHistoryIndex] != newUrl)
                 {
                     if(CurrentHistoryIndex < NavigationHistory.Count - 1)
                     {
                         NavigationHistory.RemoveRange(CurrentHistoryIndex + 1, NavigationHistory.Count - CurrentHistoryIndex - 1);
                     }
-                    NavigationHistory.Add(NewUrl);
+                    NavigationHistory.Add(newUrl);
                     CurrentHistoryIndex++;
                 }
             });
@@ -158,16 +167,29 @@ namespace Kar
 
         protected void OnPropertyChanged([CallerMemberName] string? Name = null)
         {
-            if (System.Windows.Application.Current.Dispatcher.CheckAccess())
+            if (_dispatcherService.CheckAccess())
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
             }
             else
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                _dispatcherService.Invoke(() =>
                 {
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(Name));
                 });
+            }
+        }
+
+        public void Dispose()
+        {
+            if (BrowserOperations != null)
+            {
+                BrowserOperations.AddressChanged -= OnBrowserAddressChanged;
+                if (BrowserOperations is IDisposable disposableOps)
+                {
+                    disposableOps.Dispose();
+                }
+                BrowserOperations = null;
             }
         }
     }
