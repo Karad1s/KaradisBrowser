@@ -13,8 +13,9 @@ namespace Kar
 
         public static ISearchHistoryRepository HistoryRepo { get; private set; }
         protected override async void OnStartup(StartupEventArgs e)
-        {
-           base.OnStartup(e);
+        {   
+            
+            base.OnStartup(e);
             CefSettings settings = new CefSettings();
             settings.CefCommandLineArgs.Add("enable_gpu", "1");
             settings.CefCommandLineArgs.Add("enable-gpu-rasterization", "1");
@@ -23,12 +24,22 @@ namespace Kar
             settings.CefCommandLineArgs.Add("ignore-gpu-blocklist", "1");
             settings.SetOffScreenRenderingBestPerformanceArgs();
             settings.CefCommandLineArgs.Add("enable-webgl", "1");
+
+            CefSharpSettings.ConcurrentTaskExecution = true;
+
+            settings.CefCommandLineArgs.Add("allow-file-access-from-files", "1");
+            settings.CefCommandLineArgs.Add("disable-web-security", "1");
+            
             Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
-
             SQLitePCL.Batteries.Init();
-
+            
             HistoryRepo = new SqliteSearchHistoryRepository("history.db");
             await HistoryRepo.InitializeAsync();
+            
+            
+
+            
+           
         }
         protected override void OnExit(ExitEventArgs e)
         {

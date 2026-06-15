@@ -17,34 +17,12 @@
     <div class="SearchBar">
         <input type="text" id="SearchInput" placeholder="Поиск..." autofocus>
     </div>
-    <div class="GridMostPopular">
+    <div class="GridMostPopular" id="PopularSitesGrid">
         
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
-        <div class="popularWeb"></div>
+        
     </div>
 </div>
-    <script>
-        const input = document.getElementById('SearchInput');
-
-        input.addEventListener('keypress', function (e) {
-            if (e.key === "Enter") {
-                const query = input.value;
-                if (query.trim() !== "") {
-                    window.location.href = "https://www.google.com/search?q=" + encodeURIComponent(query)
-                }
-            }
-        })
-    </script>
+    <script src="script.js"> </script>
    
 </body>
 </html>

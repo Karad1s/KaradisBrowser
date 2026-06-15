@@ -22,6 +22,12 @@ namespace Kar.HistoryPage
         {
             await App.HistoryRepo.DeleteItemAsync(url);
         }
+
+        public async Task<string> GetPopularSites(int limit)
+        {
+            var popularSites = await App.HistoryRepo.GetPopularSitesAsync(limit);
+            return System.Text.Json.JsonSerializer.Serialize(popularSites);
+        }
     }
 }
 

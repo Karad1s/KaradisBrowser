@@ -12,17 +12,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="HistoryPage\history.db" />
     <None Remove="HistoryPage\history.html" />
     <None Remove="HistoryPage\script.js" />
     <None Remove="HistoryPage\style.css" />
-    <None Remove="Settings\data.json" />
+    <None Remove="Homepage\script.js" />
     <None Remove="Settings\script.js" />
     <None Remove="Settings\Settings.html" />
-    <None Remove="Settings\Settings.json" />
+    <None Remove="Settings\settings.json" />
     <None Remove="Settings\style.css" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="HistoryPage\history.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="HistoryPage\history.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -30,6 +34,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="HistoryPage\style.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Homepage\script.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Settings\settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Shortcut\shortcut.yaml">
@@ -52,16 +62,10 @@
     <Content Include="Homepage\style.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Settings\data.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Settings\script.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Settings\Settings.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Settings\Settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Settings\style.css">

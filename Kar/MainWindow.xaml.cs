@@ -313,13 +313,33 @@ namespace Kar
                 newBrowser.JavascriptObjectRepository.Settings.LegacyBindingEnabled = true;
                 newBrowser.JavascriptObjectRepository.Register("SettingsHandler", new SettingBridge(), options: BindingOptions.DefaultBinder);
                 newBrowser.JavascriptObjectRepository.Register("csharpSettingsBridge", ViewModel.AppSettingsBridge, options: BindingOptions.DefaultBinder);
+                newBrowser.JavascriptObjectRepository.Register("HistoryBridgeCStoJS", new HistoryPage.HistoryBridge(), options: BindingOptions.DefaultBinder);
 
-                newBrowser.TitleChanged += (s, args) =>
+                newBrowser.TitleChanged += async (s, args) =>
                 {
                     Dispatcher.Invoke(() =>
                     {
                         selectedTab.Title = args.NewValue.ToString() ?? "Загрузка...";
                     });
+
+                    var webBrowser = (ChromiumWebBrowser)s;
+                    string CurrentUrl = webBrowser.Address;
+                    string pageTitle = args.NewValue.ToString() ?? "Без названия";
+
+                    if (string.IsNullOrWhiteSpace(CurrentUrl) || CurrentUrl.StartsWith("chrome-devtools://") || CurrentUrl.StartsWith("file://") ||
+                    CurrentUrl.StartsWith("chrome://") || CurrentUrl == "about:blank")
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        await App.HistoryRepo.SaveQueryAsync(CurrentUrl, pageTitle);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Ошибка при сохранении истории: {ex.Message}");
+                    }
                 };
 
                 newBrowser.DisplayHandler = new CustomDisplayHandler(selectedTab, Dispatcher, ToggleFullScreen);
@@ -426,16 +446,18 @@ namespace Kar
                                 targetCommand = ViewModel.HistoryCommand;
                                 break;
                             case "ToggleFullScreen":
-                                targetCommand = new RelayCommand(_ => {
-                                    if (this.WindowState != WindowState.Maximized)
+                                targetCommand = new RelayCommand(_ =>
+                                {
+                                    if (WindowState != WindowState.Maximized)
                                     {
-                                        WindowState = WindowState.Maximized;
+                                        ToggleFullScreen(WindowState == WindowState.Maximized);
+
                                     }
                                     else
                                     {
-                                        WindowState = WindowState.Normal;
+                                        ToggleFullScreen(WindowState == WindowState.Normal);
                                     }
-                                });
+                                }); 
                                 break;
                             case "ShowDevTools":
                                 targetCommand = new RelayCommand(_ => ShowDevTools());

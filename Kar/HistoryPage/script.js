@@ -1,6 +1,6 @@
 async function initHistory() {
     // Wait for the CefSharp bridge object to be bound
-    await CefSharp.BindObjectAsync("historyBridge");
+    await CefSharp.BindObjectAsync("HistoryBridgeCStoJS");
 
     let allHistoryItems = [];
     const historyArea = document.querySelector('.history_aria');
@@ -75,7 +75,7 @@ async function initHistory() {
                 historyItem.style.transition = 'all 0.2s ease-out';
                 
                 setTimeout(async () => {
-                    await historyBridge.deleteItem(itemUrl);
+                    await HistoryBridgeCStoJS.deleteItem(itemUrl);
                     await loadHistory();
                 }, 200);
             });
@@ -87,7 +87,7 @@ async function initHistory() {
     // Function to load history from C# database
     async function loadHistory() {
         try {
-            const jsonString = await historyBridge.getHistory();
+            const jsonString = await HistoryBridgeCStoJS.getHistory();
             allHistoryItems = JSON.parse(jsonString);
             filterAndRender();
         } catch (error) {
@@ -118,7 +118,7 @@ async function initHistory() {
 
     document.getElementById('delete').addEventListener('click', async () => {
         if (confirm("Вы уверены, что хотите полностью очистить историю поиска?")) {
-            await historyBridge.clearHistoryAsync();
+            await HistoryBridgeCStoJS.clearHistoryAsync();
             await loadHistory();
         }
     });

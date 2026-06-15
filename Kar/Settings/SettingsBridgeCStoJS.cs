@@ -31,7 +31,7 @@ namespace Kar.Settings
         public string GetSettings() => _settingsService.LoadSettings();
         public bool SaveSettings(string settings)
         {
-            System.Windows.MessageBox.Show("C# успешно получил данные из JavaScript!", "Диагностика моста");
+            System.Diagnostics.Debug.WriteLine("C# успешно получил данные из JavaScript!", "Диагностика моста");
             try
             {
                 _settingsService.SaveSettings(settings);
@@ -40,7 +40,7 @@ namespace Kar.Settings
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error saving settings: {ex.Message}");
+                Console.WriteLine($"Ошибка при сохранении настроек: {ex.Message}");
                 return false;
             }
         }

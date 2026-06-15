@@ -12,6 +12,7 @@ namespace Kar.HistoryPage
         public string url { get; set; } = string.Empty;
         public string title { get; set; } = string.Empty;
         public string VisitTime { get; set; } = string.Empty;
+        public int VisitCount { get; set; } = 1;
     }
 
     public interface ISearchHistoryRepository
@@ -23,6 +24,8 @@ namespace Kar.HistoryPage
         Task ClearAsync();
 
         Task<List<HistoryItemDto>> GetHistoryAsync();
+
+        Task<List<HistoryItemDto>> GetPopularSitesAsync(int limit);
 
         Task DeleteItemAsync(string url);
     }
@@ -47,10 +50,21 @@ namespace Kar.HistoryPage
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Url TEXT NOT NULL UNIQUE,
                     Title TEXT,
-                    VisitTimeUtc TEXT NOT NULL
+                    VisitTimeUtc TEXT NOT NULL,
+                    VisitCount INTEGER DEFAULT 1
                 )";
 
             await cmd.ExecuteNonQueryAsync();
+
+            try
+            {
+                cmd.CommandText = "ALTER TABLE SearchHistory ADD COLUMN VisitCount INTEGER DEFAULT 1";
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch
+            { 
+                // Колонка уже существует, игнорируем ошибку
+            }
         }
 
         public async Task SaveQueryAsync(string url, string title)
@@ -66,7 +80,8 @@ namespace Kar.HistoryPage
                 VALUES (@url, @title, @visitTime)
                 ON CONFLICT(Url) DO UPDATE SET
                     Title=excluded.Title,
-                    VisitTimeUtc=excluded.VisitTimeUtc";
+                    VisitTimeUtc=excluded.VisitTimeUtc,
+                    VisitCount=SearchHistory.VisitCount + 1";
 
             using var cmd = new SqliteCommand(upsetQuery, conn);
 
@@ -119,6 +134,30 @@ namespace Kar.HistoryPage
             using var cmd = new SqliteCommand("DELETE FROM SearchHistory WHERE Url = @url", conn);
             cmd.Parameters.AddWithValue("@url", url);
             await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<List<HistoryItemDto>> GetPopularSitesAsync(int limit)
+        {
+            var list = new List<HistoryItemDto>();
+            using var conn = new SqliteConnection(_connectionString);
+            await conn.OpenAsync();
+
+            string query = "SELECT Url, Title, VisitCount FROM SearchHistory ORDER BY VisitCount DESC, VisitTimeUtc DESC LIMIT @limit";
+            using var cmd = new SqliteCommand(query, conn);
+            cmd.Parameters.AddWithValue("@limit", limit);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while(await reader.ReadAsync())
+            {
+                list.Add(new HistoryItemDto
+                {
+                    url = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
+                    title = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    VisitCount = reader.IsDBNull(2) ? 1 : reader.GetInt32(2)
+                });
+            }
+            return list;
         }
     }
 }

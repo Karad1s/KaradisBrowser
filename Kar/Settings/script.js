@@ -81,12 +81,12 @@ function renderSingleSetting(item) {
 
     const info = document.createElement('div');
     info.className = 'setting-info';
-    
+
     const label = document.createElement('div');
     label.className = 'setting-label';
     label.textContent = item.label;
     info.appendChild(label);
-    
+
     container.appendChild(info);
 
     let controlHtml = '';
@@ -104,38 +104,41 @@ function renderSingleSetting(item) {
                 <span class="slider"></span>
             </label>
         `;
-    } else {
-        controlHtml = `<input type="text" id="${item.id}" value="${item.value || ''}">`;
+    } else if (item.value !== undefined) {
+        controlHtml = `<input type="text" id="${item.id}" value="${item.value}">`;
     }
 
-    const controlWrapper = document.createElement('div');
-    controlWrapper.innerHTML = controlHtml;
-    
-    const controlNode = controlWrapper.firstElementChild;
-    container.appendChild(controlNode);
+    if (controlHtml !== '') {
+        const controlWrapper = document.createElement('div');
+        controlWrapper.innerHTML = controlHtml;
 
-    // Event listener for setting changes
-    container.addEventListener('change', async (e) => {
-        const target = e.target;
-        if (target.type === 'checkbox') {
-            item.value = target.checked;
-        } else {
-            item.value = target.value;
-        }
+        const controlNode = controlWrapper.firstElementChild;
+        container.appendChild(controlNode);
 
-        console.log(`Setting changed: ${item.id} -> ${item.value}`);
-
-        try {
-            const isSaved = await csharpSettingsBridge.saveSettings(JSON.stringify(settingsData));
-            if (isSaved) {
-                console.log('Настройки успешно сохранены в C#!');
+        container.addEventListener('change', async (e) => {
+            const target = e.target;
+            if (target.type === 'checkbox') {
+                item.value = target.checked;
             } else {
-                console.error("ОШИБКА: C# вернул false при сохранении настроек.");
+                item.value = target.value;
             }
-        } catch (error) {
-            console.error("СИСТЕМНАЯ ОШИБКА JS ПРИ СОХРАНЕНИИ:", error);
-        }
-    });
+
+            console.log(`Setting changed: ${item.id} -> ${item.value}`);
+
+            try {
+                const isSaved = await csharpSettingsBridge.saveSettings(JSON.stringify(settingsData));
+                if (isSaved) {
+                    console.log('Настройки успешно сохранены в C#!');
+                } else {
+                    console.error("ОШИБКА: C# вернул false при сохранении настроек.");
+                }
+            } catch (error) {
+                console.error("СИСТЕМНАЯ ОШИБКА JS ПРИ СОХРАНЕНИИ:", error);
+            }
+        });
+    } else {
+        container.classList.add('info-only');
+    }
 
     return container;
 }

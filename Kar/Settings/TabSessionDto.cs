@@ -36,7 +36,7 @@ namespace Kar.Settings
                 CurrentHistoryIndex = t.CurrentHistoryIndex
             }).ToList();
 
-            //System.Windows.MessageBox.Show($"Отладка SessionManager: Вкладок подготовлено: {dtos.Count}", "Session Debug");
+            System.Diagnostics.Debug.WriteLine($"Отладка SessionManager: Вкладок подготовлено: {dtos.Count}", "Session Debug");
 
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
