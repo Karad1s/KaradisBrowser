@@ -10,13 +10,14 @@
         ResizeMode="CanResize"
         StateChanged="MainWindow_StateChanged"
         WindowStyle="None"
-        Title="Main" Height="720" Width="1024">
+        Title="Main" Height="720" Width="1024"
+        BorderThickness="0">
 
 
     <WindowChrome.WindowChrome>
         <shell:WindowChrome
             CaptionHeight="30"
-            ResizeBorderThickness="5"
+            ResizeBorderThickness="0"
             GlassFrameThickness="0"
             CornerRadius="0"/>
 
@@ -129,13 +130,17 @@
     </Window.Resources>
 
     <Grid x:Name = "RootGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="1021*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition x:Name="TopRow" Height="34"/>
             <RowDefinition x:Name="PanelControl" Height="45"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" x:Name="TopBar" Background="#0b0f19">
+        <Grid Grid.Row="0" x:Name="TopBar" Background="#0b0f19" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -288,7 +293,7 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Row="1" Background="#161D31">
+        <Grid Grid.Row="1" Background="#161D31" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="65*"/>
                 <ColumnDefinition Width="447*"/>
@@ -320,7 +325,7 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    
+
                     <ToggleButton x:Name="ChangedSearchSystem" 
                                   IsChecked="{Binding IsSearchMenuOpen, Mode=TwoWay}"
                                   Width="90" Height="Auto" 
@@ -513,7 +518,7 @@
                 </Popup>
             </StackPanel>
         </Grid>
-        <Grid x:Name="BrowserHost" Grid.Row="2" Background="Transparent">
+        <Grid x:Name="BrowserHost" Grid.Row="2" Background="Transparent" Grid.ColumnSpan="2">
             <Grid.Triggers>
                 <EventTrigger RoutedEvent="Binding.TargetUpdated">
                     <BeginStoryboard>

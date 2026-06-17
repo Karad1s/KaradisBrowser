@@ -25,6 +25,7 @@ namespace Kar
 
         private static readonly HttpClient HttpClient = new HttpClient();
         private readonly ObservableCollection<string> _searchSuggestions = new ObservableCollection<string>();
+        private Stack<string> _recentlyClosedUrls = new Stack<string>();
 
         public event Action? CloseRequested;
 
@@ -109,6 +110,7 @@ namespace Kar
         public ICommand ExtentionsCommand { get; }
         public ICommand ShowAllDownloadsCommand { get; }
         public ICommand OpenDownloadsFolderCommand { get; }
+        public ICommand ReopenClosedTabCommand { get; }
 
         public MainViewModel(IDispatcherService dispatcherService)
         {
@@ -133,28 +135,33 @@ namespace Kar
 
             CloseTabCommand = new RelayCommand(obj =>
             {
-                if (obj is TabViewModel tab)
+                var tab = obj as TabViewModel ?? SelectedTab;
+
+                if(tab != null)
                 {
-                    int index = Tabs.IndexOf(tab);
-
-                    if (SelectedTab == tab)
+                    if (!string.IsNullOrWhiteSpace(tab.Url))
                     {
-                        if (Tabs.Count > 1)
-                        {
-                            int newIndex = Math.Max(0, index - 1);
-                            SelectedTab = Tabs[newIndex];
-                        }
-                        else
-                        {
-                            SelectedTab = null;
-                        }
-                    }
-                    Tabs.Remove(tab);
+                        _recentlyClosedUrls.Push(tab.Url);
+                    };
+                }
+                int index = Tabs.IndexOf(tab);
 
-                    if (Tabs.Count == 0)
+                if(SelectedTab == tab)
+                {
+                    if (Tabs.Count > 1)
                     {
-                        CloseRequested?.Invoke();
+                        int newIndex = Math.Max(0, index - 1);
+                        SelectedTab = Tabs[newIndex];
                     }
+                    else
+                    {
+                        SelectedTab = null;
+                    }
+                }
+                Tabs.Remove(tab);
+                if(Tabs.Count == 0)
+                {
+                    CloseRequested?.Invoke();
                 }
             });
 
@@ -192,6 +199,15 @@ namespace Kar
             {
                 string userDownloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
                 OpenFolderExplorer(userDownloadsPath);
+            });
+
+            ReopenClosedTabCommand = new RelayCommand(obj =>
+            {
+                if (_recentlyClosedUrls.Count > 0)
+                {
+                    string url = _recentlyClosedUrls.Pop();
+                    AddNewTab(url);
+                }
             });
 
             TabItems = new CompositeCollection();

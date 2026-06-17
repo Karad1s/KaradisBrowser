@@ -12,3 +12,7 @@
   gesture: "F11"
 - action: "ShowDevTool"
   gesture: "F12"
+- action: "Reload"
+  gesture: "F5"
+- action: "ReopenClosedTab"
+  gesture: "Ctrl+Shift+T"

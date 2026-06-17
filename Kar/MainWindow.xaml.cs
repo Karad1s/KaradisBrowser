@@ -72,11 +72,13 @@ namespace Kar
         {
             if (this.WindowState == WindowState.Maximized)
             {
-                this.BorderThickness = new Thickness(8);
+                this.BorderThickness = new Thickness(0);
+                
             }
             else
             {
-                this.BorderThickness = new Thickness(0);
+                this.BorderThickness = new Thickness(1);
+            
             }
         }
 
@@ -129,7 +131,7 @@ namespace Kar
                     return new Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
                 }
             }
-            // Fallback to WPF SystemParameters
+            
             return workingAreaOnly
                 ? new Rect(SystemParameters.WorkArea.Left, SystemParameters.WorkArea.Top, SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height)
                 : new Rect(0, 0, SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
@@ -156,6 +158,9 @@ namespace Kar
                     this.ResizeMode = ResizeMode.NoResize;
                     this.WindowState = WindowState.Normal;
 
+                    this.MaxHeight = double.PositiveInfinity;
+                    this.MaxWidth = double.PositiveInfinity;
+
                     this.Left = screen.Left;
                     this.Top = screen.Top;
                     this.Width = screen.Width;
@@ -166,6 +171,14 @@ namespace Kar
                 }
                 else
                 {
+
+                    this.WindowState = _prevWindowState;
+                    this.WindowStyle = _prevWindowStyle;
+
+                    var workArea = GetCurrentScreenBounds(true);
+                    this.MaxHeight = workArea.Height;
+                    this.MaxWidth = workArea.Width;
+
                     if (_prevWindowState == WindowState.Normal)
                     {
                         this.WindowState = WindowState.Normal;
@@ -406,7 +419,7 @@ namespace Kar
                 {
                     var windowInfo = new WindowInfo();
 
-                    var helper = new System.Windows.Interop.WindowInteropHelper(this);
+                    var helper = new WindowInteropHelper(this);
                     IntPtr hostHandle = helper.Handle;
 
                     windowInfo.SetAsChild(hostHandle, (int)browser.ActualWidth - 500, 0, (int)browser.ActualWidth, (int)browser.ActualHeight);
@@ -461,6 +474,18 @@ namespace Kar
                                 break;
                             case "ShowDevTools":
                                 targetCommand = new RelayCommand(_ => ShowDevTools());
+                                break;
+                            case "Reload":
+                                targetCommand = new RelayCommand(_ =>
+                                {
+                                    if (ViewModel.SelectedTab != null && _browserCache.TryGetValue(ViewModel.SelectedTab, out var browser))
+                                    {
+                                        browser.Reload();
+                                    }
+                                });
+                                break;
+                            case "ReopenClosedTab":
+                                targetCommand = ViewModel.ReopenClosedTabCommand;
                                 break;
                         }
 
