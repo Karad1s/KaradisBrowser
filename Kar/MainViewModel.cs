@@ -56,6 +56,11 @@ namespace Kar
                     OnPropertyChanged(nameof(SelectedSearchSystem));
 
                     IsSearchMenuOpen = false;
+
+                    if(_selectedSearchSystem != null)
+                    {
+                        SelectedTab.CurrentSearchEngine = _selectedSearchSystem.Name;
+                    }
                 }
             }
         }
@@ -391,7 +396,7 @@ namespace Kar
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show("Настройки сохранились, но C# не смог найти поле 'SearchSystem' в файле settings.json.", "Ошибка чтения JSON");
+                    System.Diagnostics.Debug.WriteLine("Настройки сохранились, но C# не смог найти поле 'SearchSystem' в файле settings.json.", "Ошибка чтения JSON");
                 }
             }
             catch (JsonException ex)
