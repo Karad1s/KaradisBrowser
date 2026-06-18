@@ -7,38 +7,69 @@ using System.Xml;
 
 namespace Kar.HistoryPage
 {
+    /// <summary>
+    /// Объект передачи данных (DTO), представляющий отдельную запись в истории посещений браузера.
+    /// </summary>
     public class HistoryItemDto
     {
+        /// <summary>URL-адрес посещенной страницы.</summary>
         public string url { get; set; } = string.Empty;
+
+        /// <summary>Заголовок веб-страницы.</summary>
         public string title { get; set; } = string.Empty;
+
+        /// <summary>Время последнего посещения страницы (в формате UTC строки).</summary>
         public string VisitTime { get; set; } = string.Empty;
+
+        /// <summary>Количество переходов по данному URL.</summary>
         public int VisitCount { get; set; } = 1;
     }
 
+    /// <summary>
+    /// Интерфейс для работы с хранилищем истории браузера.
+    /// Определяет основные CRUD-операции.
+    /// </summary>
     public interface ISearchHistoryRepository
     {
+        /// <summary>Инициализирует базу данных (создает таблицы при их отсутствии).</summary>
         Task InitializeAsync();
 
+        /// <summary>Сохраняет информацию о посещенной странице или обновляет данные существующей.</summary>
         Task SaveQueryAsync(string url, string title);
 
+        /// <summary>Полностью очищает историю посещений.</summary>
         Task ClearAsync();
 
+        /// <summary>Возвращает список всех записей истории.</summary>
         Task<List<HistoryItemDto>> GetHistoryAsync();
 
+        /// <summary>Возвращает топ самых посещаемых сайтов.</summary>
         Task<List<HistoryItemDto>> GetPopularSitesAsync(int limit);
 
+        /// <summary>Удаляет конкретную запись по URL.</summary>
         Task DeleteItemAsync(string url);
     }
 
+    /// <summary>
+    /// Реализация репозитория истории посещений с использованием локальной базы данных SQLite.
+    /// </summary>
     public class SqliteSearchHistoryRepository : ISearchHistoryRepository
     {
         private readonly string _connectionString;
 
+        /// <summary>
+        /// Инициализирует новый экземпляр репозитория.
+        /// </summary>
+        /// <param name="dbPath">Путь к файлу базы данных SQLite.</param>
         public SqliteSearchHistoryRepository(string dbPath)
         {
             _connectionString = $"Data source = {dbPath}";
         }
 
+        /// <summary>
+        /// Создает таблицу SearchHistory, если она не существует, 
+        /// а также выполняет миграцию схемы (добавляет колонку VisitCount для старых версий БД).
+        /// </summary>
         public async Task InitializeAsync()
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -58,23 +89,30 @@ namespace Kar.HistoryPage
 
             try
             {
+                // Попытка обновления схемы (миграция для совместимости с предыдущими версиями)
                 cmd.CommandText = "ALTER TABLE SearchHistory ADD COLUMN VisitCount INTEGER DEFAULT 1";
                 await cmd.ExecuteNonQueryAsync();
             }
             catch
-            { 
+            {
                 // Колонка уже существует, игнорируем ошибку
             }
         }
 
+        /// <summary>
+        /// Добавляет новую запись в историю. Если URL уже существует, обновляет заголовок, 
+        /// время последнего визита и увеличивает счетчик посещений (Upsert-логика).
+        /// </summary>
+        /// <param name="url">Посещенный URL.</param>
+        /// <param name="title">Заголовок страницы.</param>
         public async Task SaveQueryAsync(string url, string title)
         {
             if (string.IsNullOrWhiteSpace(url)) return;
 
             using var conn = new SqliteConnection(_connectionString);
-
             await conn.OpenAsync();
 
+            // Запрос с использованием конструкции ON CONFLICT для атомарного обновления/вставки
             string upsetQuery = @"
                 INSERT INTO SearchHistory (Url, Title, VisitTimeUtc)
                 VALUES (@url, @title, @visitTime)
@@ -92,6 +130,9 @@ namespace Kar.HistoryPage
             await cmd.ExecuteNonQueryAsync();
         }
 
+        /// <summary>
+        /// Удаляет все записи из таблицы истории.
+        /// </summary>
         public async Task ClearAsync()
         {
             using var conn = new SqliteConnection(_connectionString);
@@ -101,6 +142,10 @@ namespace Kar.HistoryPage
             await cmd.ExecuteNonQueryAsync();
         }
 
+        /// <summary>
+        /// Извлекает всю историю посещений, отсортированную по времени по убыванию (от новых к старым).
+        /// </summary>
+        /// <returns>Список объектов HistoryItemDto.</returns>
         public async Task<List<HistoryItemDto>> GetHistoryAsync()
         {
             var list = new List<HistoryItemDto>();
@@ -124,6 +169,10 @@ namespace Kar.HistoryPage
             return list;
         }
 
+        /// <summary>
+        /// Удаляет запись из базы данных по точному совпадению URL.
+        /// </summary>
+        /// <param name="url">URL для удаления.</param>
         public async Task DeleteItemAsync(string url)
         {
             if (string.IsNullOrWhiteSpace(url)) return;
@@ -136,6 +185,12 @@ namespace Kar.HistoryPage
             await cmd.ExecuteNonQueryAsync();
         }
 
+        /// <summary>
+        /// Возвращает список самых популярных сайтов, сортируя их сначала по количеству посещений, 
+        /// а затем по времени последнего визита.
+        /// </summary>
+        /// <param name="limit">Количество возвращаемых записей.</param>
+        /// <returns>Список популярных сайтов.</returns>
         public async Task<List<HistoryItemDto>> GetPopularSitesAsync(int limit)
         {
             var list = new List<HistoryItemDto>();
@@ -148,7 +203,7 @@ namespace Kar.HistoryPage
 
             using var reader = await cmd.ExecuteReaderAsync();
 
-            while(await reader.ReadAsync())
+            while (await reader.ReadAsync())
             {
                 list.Add(new HistoryItemDto
                 {

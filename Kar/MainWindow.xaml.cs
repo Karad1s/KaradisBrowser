@@ -30,6 +30,11 @@ namespace Kar
 
         public MainViewModel ViewModel { get; set; }
 
+        /// <summary>
+        /// Конструктор главного окна. Инициализирует компоненты, 
+        /// настраивает вью-модель, подписки на закрытие и изменение коллекции вкладок,
+        /// а также динамически привязывает шорткаты.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
@@ -40,9 +45,11 @@ namespace Kar
                 return;
             }
 
+            // Создаем MainViewModel с потокобезопасной службой диспетчеризации
             ViewModel = new MainViewModel(new WpfDispatcherService(this.Dispatcher));
             ViewModel.CloseRequested += () => Close();
 
+            // Обработчик удаления вкладки — очищает кэш браузера для предотвращения утечек памяти
             ViewModel.Tabs.CollectionChanged += (s, e) =>
             {
                 if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
@@ -54,6 +61,7 @@ namespace Kar
                 }
             };
 
+            // Ограничиваем максимальные размеры окна текущими границами экрана
             this.SourceInitialized += (s, e) =>
             {
                 var screen = GetCurrentScreenBounds(true);
@@ -68,31 +76,41 @@ namespace Kar
             UpdBrowserUI();
         }
 
+        /// <summary>
+        /// Управляет толщиной рамки окна при изменении состояния (убирает рамку в режиме Maximized).
+        /// </summary>
         private void MainWindow_StateChanged(object sender, EventArgs e)
         {
             if (this.WindowState == WindowState.Maximized)
             {
                 this.BorderThickness = new Thickness(0);
-                
             }
             else
             {
                 this.BorderThickness = new Thickness(1);
-            
             }
         }
 
+        /// <summary>
+        /// Регистрирует перехватчик (Hook) оконных сообщений Windows для кастомной обработки геометрии окна.
+        /// </summary>
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
         {
             IntPtr handle = new WindowInteropHelper(this).Handle;
             HwndSource.FromHwnd(handle)?.AddHook(WindowProc);
         }
 
+        /// <summary>
+        /// Обработчик кнопки закрытия окна.
+        /// </summary>
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Вызывается при закрытии окна. Сохраняет текущую сессию вкладок и отключает CEF.
+        /// </summary>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             if (ViewModel != null)
@@ -103,8 +121,14 @@ namespace Kar
             base.OnClosed(e);
         }
 
+        /// <summary>
+        /// Сворачивает окно приложения.
+        /// </summary>
         private void MinimizeButton_Click(object sender, RoutedEventArgs e) => this.WindowState = WindowState.Minimized;
 
+        /// <summary>
+        /// Разворачивает окно на весь экран или восстанавливает его прежний размер.
+        /// </summary>
         private void MaximizeButton_Click(object sender, RoutedEventArgs e)
         {
             if (this.WindowState == WindowState.Maximized)
@@ -117,6 +141,10 @@ namespace Kar
             }
         }
 
+        /// <summary>
+        /// Получает границы экрана для текущего окна с помощью Win32 API.
+        /// </summary>
+        /// <param name="workingAreaOnly">True, если нужно исключить панель задач (рабочая область), иначе False.</param>
         private Rect GetCurrentScreenBounds(bool workingAreaOnly)
         {
             IntPtr hwnd = new WindowInteropHelper(this).Handle;
@@ -137,12 +165,18 @@ namespace Kar
                 : new Rect(0, 0, SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
         }
 
+        /// <summary>
+        /// Включает или отключает полноэкранный режим (например, при просмотре видео на YouTube).
+        /// Скрывает верхнюю панель и строку адреса.
+        /// </summary>
+        /// <param name="isFullScreen">True для перехода в полноэкранный режим, False для возврата.</param>
         public void ToggleFullScreen(bool isFullScreen)
         {
             Dispatcher.Invoke(() =>
             {
                 if (isFullScreen)
                 {
+                    // Сохраняем текущее состояние перед переходом в полноэкранный режим
                     _prevWindowState = this.WindowState;
                     _prevWindowStyle = this.WindowStyle;
                     _prevResizeMode = this.ResizeMode;
@@ -154,6 +188,7 @@ namespace Kar
 
                     var screen = GetCurrentScreenBounds(false);
 
+                    // Убираем рамки и разворачиваем на полный экран
                     this.WindowStyle = WindowStyle.None;
                     this.ResizeMode = ResizeMode.NoResize;
                     this.WindowState = WindowState.Normal;
@@ -166,12 +201,13 @@ namespace Kar
                     this.Width = screen.Width;
                     this.Height = screen.Height;
 
+                    // Скрываем элементы управления браузера
                     TopRow.Height = new GridLength(0);
                     PanelControl.Height = new GridLength(0);
                 }
                 else
                 {
-
+                    // Восстанавливаем прежний стиль окна
                     this.WindowState = _prevWindowState;
                     this.WindowStyle = _prevWindowStyle;
 
@@ -192,12 +228,16 @@ namespace Kar
                         this.WindowState = _prevWindowState;
                     }
 
+                    // Показываем элементы управления обратно
                     TopRow.Height = new GridLength(34);
                     PanelControl.Height = new GridLength(45);
                 }
             });
         }
 
+        /// <summary>
+        /// Вызывается при выборе поисковой подсказки в выпадающем списке.
+        /// </summary>
         private void SuggestionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (SuggestionList.SelectedItem is string selected)
@@ -209,6 +249,9 @@ namespace Kar
             }
         }
 
+        /// <summary>
+        /// Переводит поисковый запрос подсказки в отформатированный URL во вью-модели.
+        /// </summary>
         private void MapsToUrl(string query)
         {
             if (string.IsNullOrWhiteSpace(query)) return;
@@ -222,6 +265,10 @@ namespace Kar
             }
         }
 
+        /// <summary>
+        /// Обработчик изменения ввода в адресной строке. Асинхронно запрашивает автодополнение
+        /// и открывает всплывающее окно подсказок SuggestionPopup.
+        /// </summary>
         private async void UrlTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!UrlTextBox.IsFocused)
@@ -232,6 +279,7 @@ namespace Kar
 
             string query = UrlTextBox.Text;
 
+            // Если введено более 2-х символов и это не прямая ссылка
             if (query.Length > 2 && !query.StartsWith("http"))
             {
                 await ViewModel.LoadSearchSuggestionsAsync(query);
@@ -253,6 +301,9 @@ namespace Kar
             }
         }
 
+        /// <summary>
+        /// Внутренний метод перехода по адресу или выполнения поискового запроса.
+        /// </summary>
         private void NegativeToUrl(string query)
         {
             if (string.IsNullOrWhiteSpace(query)) return;
@@ -274,6 +325,9 @@ namespace Kar
             }
         }
 
+        /// <summary>
+        /// Вызывается при нажатии клавиш в адресной строке. По Enter инициирует переход.
+        /// </summary>
         private void UrlTextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -292,6 +346,9 @@ namespace Kar
             }
         }
 
+        /// <summary>
+        /// Настраивает перерисовку браузера при смене активной вкладки во вью-модели.
+        /// </summary>
         private void SetupTabManager()
         {
             ViewModel.PropertyChanged += (s, e) =>
@@ -303,11 +360,17 @@ namespace Kar
             };
         }
 
+        /// <summary>
+        /// Основной метод обновления пользовательского интерфейса браузера CefSharp.
+        /// Извлекает из кэша или создает новый экземпляр ChromiumWebBrowser для выбранной вкладки,
+        /// настраивает JS-мосты и регистрирует кастомные обработчики событий (LifeSpan, Request, Download и др.).
+        /// </summary>
         private void UpdBrowserUI()
         {
             var selectedTab = ViewModel.SelectedTab;
             if (selectedTab == null) return;
 
+            // Если для вкладки еще нет созданного веб-браузера в кэше, инициализируем его
             if (!_browserCache.ContainsKey(selectedTab))
             {
                 var newBrowser = new ChromiumWebBrowser();
@@ -316,6 +379,7 @@ namespace Kar
                 var browserOps = new CefSharpBrowserOperations(newBrowser);
                 selectedTab.BrowserOperations = browserOps;
 
+                // Регистрация обработчиков событий
                 downloadHandler.DownloadStateChanged += OnDownloadStateChanged;
                 newBrowser.MenuHandler = new CustomMenuHandler();
                 newBrowser.LifeSpanHandler = new CustomLifeSpanHandler(url => ViewModel.AddNewTab(url), url => OpenPopupInWindow(url));
@@ -323,11 +387,13 @@ namespace Kar
                 newBrowser.KeyboardHandler = new CustomKeyboardHandler(this);
                 newBrowser.DownloadHandler = downloadHandler;
 
+                // Настройка поддержки интеграции C# с JS (загрузка истории, настроек и сессий в HTML)
                 newBrowser.JavascriptObjectRepository.Settings.LegacyBindingEnabled = true;
                 newBrowser.JavascriptObjectRepository.Register("SettingsHandler", new SettingBridge(), options: BindingOptions.DefaultBinder);
                 newBrowser.JavascriptObjectRepository.Register("csharpSettingsBridge", ViewModel.AppSettingsBridge, options: BindingOptions.DefaultBinder);
                 newBrowser.JavascriptObjectRepository.Register("HistoryBridgeCStoJS", new HistoryPage.HistoryBridge(), options: BindingOptions.DefaultBinder);
 
+                // Обработчик события изменения заголовка веб-страницы (сохраняет страницы в историю посещений)
                 newBrowser.TitleChanged += async (s, args) =>
                 {
                     Dispatcher.Invoke(() =>
@@ -339,6 +405,7 @@ namespace Kar
                     string CurrentUrl = webBrowser.Address;
                     string pageTitle = args.NewValue.ToString() ?? "Без названия";
 
+                    // Пропускаем служебные страницы при сохранении в историю
                     if (string.IsNullOrWhiteSpace(CurrentUrl) || CurrentUrl.StartsWith("chrome-devtools://") || CurrentUrl.StartsWith("file://") ||
                     CurrentUrl.StartsWith("chrome://") || CurrentUrl == "about:blank")
                     {
@@ -357,6 +424,7 @@ namespace Kar
 
                 newBrowser.DisplayHandler = new CustomDisplayHandler(selectedTab, Dispatcher, ToggleFullScreen);
 
+                // Двусторонняя привязка свойства адреса веб-страницы
                 System.Windows.Data.Binding myBinding = new System.Windows.Data.Binding("Url")
                 {
                     Source = selectedTab,
@@ -371,6 +439,7 @@ namespace Kar
 
             var activeBrowser = _browserCache[selectedTab];
 
+            // Заменяем текущий отображаемый браузер на активный
             if (BrowserHost.Children.Count == 0 || BrowserHost.Children[0] != activeBrowser)
             {
                 BrowserHost.Children.Clear();
@@ -378,6 +447,9 @@ namespace Kar
             }
         }
 
+        /// <summary>
+        /// Определяет, является ли ввод поисковым запросом (содержит пробелы или не содержит точек).
+        /// </summary>
         private bool IsSearchQuery(string input)
         {
             if (input.Contains(" ")) return true;
@@ -387,11 +459,13 @@ namespace Kar
             return !input.Contains(".");
         }
 
+        /// <summary>
+        /// Удаляет вкладку из кэша браузеров и корректно освобождает связанные ресурсы.
+        /// </summary>
         private void DoDelCache(TabViewModel tab)
         {
             if (tab == null) return;
 
-            // Dispose to unsubscribe events and prevent memory leaks
             tab.Dispose();
 
             if (!_browserCache.ContainsKey(tab)) return;
@@ -405,10 +479,12 @@ namespace Kar
             }
 
             browser.Dispose();
-
             _browserCache.Remove(tab);
         }
 
+        /// <summary>
+        /// Открывает окно инструментов разработчика (Chrome DevTools) для текущей активной вкладки.
+        /// </summary>
         public void ShowDevTools()
         {
             Dispatcher.Invoke(() =>
@@ -422,6 +498,7 @@ namespace Kar
                     var helper = new WindowInteropHelper(this);
                     IntPtr hostHandle = helper.Handle;
 
+                    // Позиционируем DevTools внутри окна браузера
                     windowInfo.SetAsChild(hostHandle, (int)browser.ActualWidth - 500, 0, (int)browser.ActualWidth, (int)browser.ActualHeight);
 
                     browser.ShowDevTools(windowInfo);
@@ -429,6 +506,10 @@ namespace Kar
             });
         }
 
+        /// <summary>
+        /// Загружает горячие клавиши из файла конфигурации shortcut.yaml 
+        /// и динамически регистрирует их привязки (InputBindings) к командам главного окна.
+        /// </summary>
         public void ApplyShortcuts()
         {
             var shortcuts = Shortcut.ShortcutLoader.LoadShortcut();
@@ -464,7 +545,6 @@ namespace Kar
                                     if (WindowState != WindowState.Maximized)
                                     {
                                         ToggleFullScreen(WindowState == WindowState.Maximized);
-
                                     }
                                     else
                                     {
@@ -504,11 +584,15 @@ namespace Kar
                 {
                     System.Diagnostics.Debug.WriteLine($"Ошибка при применении горячей клавиши '{shortcut.Gesture}' для действия '{shortcut.Action}': {ex.Message}");
                 }
-
-                System.Diagnostics.Debug.WriteLine($"[WPF] Успешно привязано горячих клавиш к окну: {addedBindingsCount}");
             }
+            System.Diagnostics.Debug.WriteLine($"[WPF] Успешно привязано горячих клавиш к окну: {addedBindingsCount}");
         }
 
+        /// <summary>
+        /// Открывает всплывающее диалоговое окно (например, для страниц авторизации Google/VK OAuth)
+        /// в отдельном дочернем WPF окне.
+        /// </summary>
+        /// <param name="url">URL-адрес страницы входа.</param>
         public void OpenPopupInWindow(string url)
         {
             var popupBrowser = new ChromiumWebBrowser(url);
@@ -531,10 +615,12 @@ namespace Kar
             popupWindow.Show();
         }
 
+        /// <summary>
+        /// Обработчик обновления статуса загрузки. Обновляет модель недавних загрузок.
+        /// </summary>
         private void OnDownloadStateChanged(object sender, DownloadItem e)
         {
             var downloads = ViewModel.RecentDownloads;
-
             var existingItem = downloads.FirstOrDefault(d => d.Id == e.Id);
 
             if (existingItem != null)
@@ -550,6 +636,7 @@ namespace Kar
                 newItem.Update(e);
                 downloads.Insert(0, newItem);
 
+                // Ограничиваем список недавних загрузок пятью элементами
                 if (downloads.Count > 5)
                 {
                     downloads.RemoveAt(downloads.Count - 1);
@@ -557,6 +644,9 @@ namespace Kar
             }
         }
 
+        /// <summary>
+        /// Регистрирует мост настроек настроек с JS для указанного инстанса ChromiumWebBrowser.
+        /// </summary>
         private void RegisterSettingsBridge(ChromiumWebBrowser browser)
         {
             if (ViewModel?.AppSettingsBridge == null)
@@ -577,9 +667,12 @@ namespace Kar
             }
         }
 
+        /// <summary>
+        /// Системная процедура обработки сообщений окна Windows Hook. Перехватывает WM_GETMINMAXINFO.
+        /// </summary>
         private IntPtr WindowProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
-            if (msg == 0x0024)
+            if (msg == 0x0024) // WM_GETMINMAXINFO
             {
                 WmGetMinMaxInfo(hwnd, lParam);
                 handled = true;
@@ -587,6 +680,7 @@ namespace Kar
             return IntPtr.Zero;
         }
 
+        // P/Invoke импорт функций Win32 API для корректного разворачивания кастомного окна WPF
         [DllImport("user32.dll")]
         private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 
@@ -628,6 +722,10 @@ namespace Kar
             public int Bottom;
         }
 
+        /// <summary>
+        /// Рассчитывает размеры развернутого окна (Maximized) с учетом текущего монитора и размера панели задач.
+        /// Исключает дефолтное поведение Windows, когда кастомное окно без рамок закрывает панель задач.
+        /// </summary>
         private void WmGetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
         {
             MINMAXINFO mmi = (MINMAXINFO)Marshal.PtrToStructure<MINMAXINFO>(lParam);
@@ -649,8 +747,14 @@ namespace Kar
             Marshal.StructureToPtr(mmi, lParam, true);
         }
 
+        /// <summary>
+        /// Вспомогательный класс моста JS для открытия настроек ОС Windows по умолчанию.
+        /// </summary>
         public class SettingBridge
         {
+            /// <summary>
+            /// Запускает встроенный интерфейс настроек приложений ОС Windows по умолчанию.
+            /// </summary>
             public void OpenSettings()
             {
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ms-settings:defaultapps") { UseShellExecute = true });

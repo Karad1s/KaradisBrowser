@@ -11,6 +11,8 @@ namespace Kar.Handlers
         {
             model.AddItem((CefMenuCommand)26501, "Посмотреть код");
         }
+
+        //Отвечает за открытие инструмента разработчика через контекстное меню.
         public bool OnContextMenuCommand(IWebBrowser browserControl,IBrowser browser,IFrame frame,IContextMenuParams parameters,CefMenuCommand commandId,CefEventFlags eventFlags)
         {
             if ((int)commandId == 26501)
@@ -19,6 +21,7 @@ namespace Kar.Handlers
                 return true;
             }
             return false;
+           
         }
         public void OnContextMenuDismissed(IWebBrowser chromiumWebBrowser, IBrowser browser, IFrame frame) { }
         public bool RunContextMenu(IWebBrowser chromiumWebBrowser, IBrowser browser, IFrame frame, IContextMenuParams parameters, IMenuModel model, IRunContextMenuCallback callback) => false;

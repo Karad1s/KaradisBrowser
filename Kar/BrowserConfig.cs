@@ -5,7 +5,7 @@ namespace Kar
 {
     public static class BrowserConfig
     {
-        // Directories and System paths
+        // Директории и системные пути
         public static readonly string SettingsDirName = "Settings";
         public static readonly string SettingsFileName = "Settings.json";
         public static readonly string SessionFileName = "session.yaml";
@@ -24,15 +24,15 @@ namespace Kar
         public static string HomepageDir => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Homepage");
         public static string HomepageHtmlPath => Path.Combine(HomepageDir, "home.html");
 
-        // External endpoints
+        // Внешние конечные точки
         public static readonly string ChromeExtensionsUrl = "https://chromewebstore.google.com/category/extensions";
         public static readonly string GoogleSuggestionsApiUrl = "http://suggestqueries.google.com/complete/search?client=firefox&q=";
 
-        // Custom protocol or fallback keys
+        // Кастомный протокол или резервные ключи
         public static readonly string AboutHome = "about:home";
         public static readonly string FallbackHomeRelative = "Kar/Homepage/home.html";
 
-        // Provider authentication domains
+        // Домены аутентификации провайдеров
         public static readonly string[] AuthDomains = new[]
         {
             "accounts.google.com",
@@ -46,7 +46,7 @@ namespace Kar
             "ok.ru/dk"
         };
 
-        // Standard auth keywords inside path
+        // Стандартные ключевые слова аутентификации в пути
         public static readonly string[] AuthKeywords = new[]
         {
             "login",
@@ -60,7 +60,7 @@ namespace Kar
             "sign-up"
         };
 
-        // Universal OAuth2 Query Parameters
+        // Универсальные параметры запроса OAuth2
         public static readonly string[] OAuthParameters = new[]
         {
             "client_id=",
