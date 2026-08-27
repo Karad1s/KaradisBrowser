@@ -12,6 +12,7 @@ using System.Windows.Interop;
 using CefSharp;
 using CefSharp.Wpf;
 using Kar.Handlers;
+using Microsoft.VisualBasic.Devices;
 
 namespace Kar
 {
@@ -68,6 +69,9 @@ namespace Kar
                 this.MaxHeight = screen.Height;
                 this.MaxWidth = screen.Width;
             };
+
+            var networkSM = new Homepage.NetworkSpeedMonitor();
+            networkSM.Start();
 
             ApplyShortcuts();
 
@@ -342,7 +346,7 @@ namespace Kar
 
                 if (ViewModel.SelectedTab != null) ViewModel.SelectedTab.Url = finalUrl;
                 NegativeToUrl(userInput);
-                Keyboard.ClearFocus();
+                System.Windows.Input.Keyboard.ClearFocus();
             }
         }
 
@@ -392,6 +396,7 @@ namespace Kar
                 newBrowser.JavascriptObjectRepository.Register("SettingsHandler", new SettingBridge(), options: BindingOptions.DefaultBinder);
                 newBrowser.JavascriptObjectRepository.Register("csharpSettingsBridge", ViewModel.AppSettingsBridge, options: BindingOptions.DefaultBinder);
                 newBrowser.JavascriptObjectRepository.Register("HistoryBridgeCStoJS", new HistoryPage.HistoryBridge(), options: BindingOptions.DefaultBinder);
+                newBrowser.JavascriptObjectRepository.Register("HomeBridgeCStoJS", new Homepage.HomeBridgeCStoJS(newBrowser), options: BindingOptions.DefaultBinder);
 
                 // Обработчик события изменения заголовка веб-страницы (сохраняет страницы в историю посещений)
                 newBrowser.TitleChanged += async (s, args) =>

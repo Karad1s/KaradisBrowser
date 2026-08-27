@@ -55,4 +55,41 @@ async function loadPopularSites() {
     }
 }
 
+function updateNetworkSpeed(download, upload){
+    const dlSpeed = document.getElementById('dlSpeed');
+    const upSpeed = document.getElementById('upSpeed');
+    if (!dlSpeed || !upSpeed){
+        return;
+    }
+
+    dlSpeed.textContent = formatSpeed(download);
+    upSpeed.textContent = formatSpeed(upload);
+}
+
+function formatSpeed(bytesPerSecond){
+    if(bytesPerSecond<1024){
+        return `${bytesPerSecond.toFixed(0)} B/s`;
+    }
+    if(bytesPerSecond<1024**2){
+        return `${(bytesPerSecond/1024).toFixed(1)} KB/s`;
+    }
+    if(bytesPerSecond<102**3){
+        return `${(bytesPerSecond/1024**2).toFixed(2)} MB/s`;
+    }
+    return `${(bytesPerSecond/1024**3).toFixed(2)} GB/s`
+}
+
+function startNetworkMonitor(){
+    if(typeof CefSharp === "undefined"){
+        return;
+    }
+
+    CefSharp.BindObjectAsync("HomeBridgeCStoJS").then(function(){
+        HomeBridgeCStoJS.startNetworkMonitor();
+    }).catch(function(error){
+        console.error("Не удалось запустить монитор скорости:", error);
+    })
+}
+
 loadPopularSites();
+startNetworkMonitor();

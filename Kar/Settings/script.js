@@ -1,12 +1,17 @@
 let settingsData = {};
+let installedBrowsers = [];
 
 async function init() {
+    await CefSharp.BindObjectAsync("csharpSettingsBridge");
+    
     try {
-        await CefSharp.BindObjectAsync("csharpSettingsBridge");
 
         const settingsJson = await csharpSettingsBridge.getSettings();
         settingsData = JSON.parse(settingsJson);
         console.log("Настройки получены из C#:", settingsData);
+
+        const browserJson = await csharpSettingsBridge.getInstalledBrowsers();
+        installedBrowsers = JSON.parse(browserJson);
 
         setupEventListeners();
         showSelection('security');
@@ -14,7 +19,58 @@ async function init() {
     } catch (error) {
         console.error("Критическая ошибка инициализации моста:", error);
     }
+
+    try {
+        const importModal = document.getElementById('importModal');
+        const startImportBtn = document.getElementById('startImportBtn');
+        const cancelImportBtn = document.getElementById('cancelImportBtn'); 
+
+        cancelImportBtn.addEventListener('click', () => {
+            importModal.style.display = 'none';
+            const select = document.getElementById('browserSelect');
+            if (select) select.value = "";
+        });
+
+        startImportBtn.addEventListener('click', async () => {
+            const browserSelect = document.getElementById('browserSelect');
+            if (!browserSelect) return;
+
+            const selectedBrowser = browserSelect.value;
+            const options = {
+                history: document.getElementById('importHistory').checked,
+                bookmarks: document.getElementById('importBookmarks').checked,
+                passwords: document.getElementById('importPasswords').checked,
+                cookies: document.getElementById('importCookies').checked
+            };
+
+            let isRunning = await csharpSettingsBridge.isBrowserRunning(selectedBrowser);
+
+            while(isRunning) {
+                alert(`Пожалуйста, закройте ${selectedBrowser} для продолжения импорта.`);
+                return;
+            }
+            
+            try {
+                const result = await csharpSettingsBridge.importData(selectedBrowser, JSON.stringify(options));
+                alert(result);
+            } catch(importError) {
+                console.error("Ошибка при переносе данных:", importError);
+            }
+
+            importModal.style.display = 'none';
+            browserSelect.value = "";
+        });
+
+    } catch(error) {
+        console.error("Ошибка инициализации модального окна:", error);
+    }
 }
+
+document.addEventListener('change',(e) =>{
+    if(e.target.id === 'browserSelect' && e.target.value){
+        document.getElementById('importModal').style.display="block"
+    }
+});
 
 function setupEventListeners() {
     // Sidebar navigation clicks
@@ -104,9 +160,16 @@ function renderSingleSetting(item) {
                 <span class="slider"></span>
             </label>
         `;
-    } else if (item.value !== undefined) {
+    }else if(item.type === 'select'){
+        const optionsHtml = installedBrowsers.map(b=> `<option value="${b}">${b}</option>`).join('');
+
+        controlHtml = `<select id="browserSelect">
+        <option value=""> Выберите браузер...</option>
+        ${optionsHtml}
+        </select>`;
+    }else if (item.value !== undefined) {
         controlHtml = `<input type="text" id="${item.id}" value="${item.value}">`;
-    }
+    } 
 
     if (controlHtml !== '') {
         const controlWrapper = document.createElement('div');

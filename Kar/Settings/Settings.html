@@ -59,7 +59,7 @@
                     <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                     Язык
                 </div>
-                <div class="menu-item" data-category="developer">
+                <div class="menu-item" data-category="account">
                     <svg width="15" height="21" viewBox="0 0 15 21" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <mask id="path-1-outside-1_8_23" maskUnits="userSpaceOnUse" x="-0.5" y="-0.5" width="16" height="21" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
                             <rect fill="white" x="-0.5" y="-0.5" width="16" height="21" />
@@ -67,7 +67,7 @@
                         </mask>
                         <path d="M14.499 19.667V20.167H14.997L14.999 19.669L14.499 19.667ZM0.500977 19.667L0.000980765 19.669L0.00302416 20.167H0.500977V19.667ZM7.66699 0.5L7.66703 0H7.66699V0.5ZM11.833 4.66699L12.333 4.66703V4.66699H11.833ZM7.66699 8.83301V9.33301H7.66703L7.66699 8.83301ZM3.5 4.66699H3V4.66703L3.5 4.66699ZM7.5 11.25V11.75C11.0096 11.75 14 15.188 14 19.625H14.5H15C15 14.8112 11.7224 10.75 7.5 10.75V11.25ZM14.5 19.625H14C14 19.6223 14.0001 19.6212 13.9998 19.6291C13.9996 19.6343 13.9991 19.6491 13.999 19.6649L14.499 19.667L14.999 19.669C14.999 19.6709 14.999 19.6717 14.9992 19.6629C14.9995 19.6568 15 19.6417 15 19.625H14.5ZM14.499 19.667V19.167H0.500977V19.667V20.167H14.499V19.667ZM0.500977 19.667L1.00097 19.6649C1.00091 19.6491 1.00036 19.6343 1.00018 19.6291C0.999913 19.6212 1 19.6223 1 19.625H0.5H0C0 19.6417 0.000546634 19.6568 0.000753134 19.6629C0.00104994 19.6717 0.000988364 19.6709 0.000980765 19.669L0.500977 19.667ZM0.5 19.625H1C1 15.188 3.99038 11.75 7.5 11.75V11.25V10.75C3.27763 10.75 0 14.8112 0 19.625H0.5ZM7.66699 0.5L7.66695 1C9.69176 1.00015 11.333 2.64194 11.333 4.66699H11.833H12.333C12.333 2.08989 10.2443 0.000197142 7.66703 0L7.66699 0.5ZM11.833 4.66699L11.333 4.66695C11.3329 6.69177 9.69177 8.33285 7.66695 8.33301L7.66699 8.83301L7.66703 9.33301C10.2441 9.33281 12.3328 7.24407 12.333 4.66703L11.833 4.66699ZM7.66699 8.83301V8.33301C5.64194 8.33301 4.00015 6.69176 4 4.66695L3.5 4.66699L3 4.66703C3.0002 7.24429 5.08989 9.33301 7.66699 9.33301V8.83301ZM3.5 4.66699H4C4 2.64195 5.64195 1 7.66699 1V0.5V0C5.08966 0 3 2.08966 3 4.66699H3.5Z" fill="none" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" mask="url(#path-1-outside-1_8_23)" />
                     </svg>
-                    О нас
+                    Аккаунт
                 </div>
             </nav>
         </div>
@@ -79,6 +79,25 @@
             </div>
         </div>
     </main>
+
+    <!-- Модальное окно переноса данных -->
+
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h2>Данные для переноса</h2>
+            <div class="checkbox-group">
+                <label> <input type="checkbox" id="importHistory"> История</label>
+                <label><input type="checkbox" id="importBookmarks"> Закладки</label>
+                <label><input type="checkbox" id="importPasswords"> Пароли</label>
+                <label><input type="checkbox" id="importCookies"> Куки</label>
+            </div>
+            <div class="modal-actions">
+                <button id="startImportBtn" class="primary-btn">Перенести</button>
+                <button id="cancelImportBtn" class="secondary-btn">Отмена</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

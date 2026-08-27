@@ -51,6 +51,19 @@ body {
     border-radius: 10px;
 }
 
+/* ===== NETWORK SPEED ===== */
+
+.networkSpeed{
+    display: flex;
+    position: relative;
+    left: 45%;
+    margin-top: 20px;
+    color: #D9D9D9;
+    align-items: center;
+    justify-content: space-between;
+    width: 150px;
+}
+
 /* ===== DECORS ===== */
 .Decors {
     position: fixed;
@@ -115,6 +128,8 @@ body {
         gap: 15px;
     }
 }
+
+
 
 /* телефоны */
 @media (max-width: 480px) {
